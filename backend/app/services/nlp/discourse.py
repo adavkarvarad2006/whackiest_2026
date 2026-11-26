@@ -30,8 +30,18 @@ COREF_TRIGGERS = (
 
 def _infer_topic_from_text(text: str) -> str | None:
     low = text.lower()
-    if "fixed deposit" in low or "fd_certificate" in low or "demo-fd" in low or "mature" in low:
+    if "recurring deposit" in low or re.search(r"\brd\b", low):
+        return "fixed deposit and recurring deposit"
+    if "fixed deposit" in low or "fd_certificate" in low or "demo-fd" in low or "mature" in low or re.search(r"\bfd\b", low):
         return "fixed deposit"
+    if "credit score" in low or "cibil" in low:
+        return "credit score"
+    if "inflation" in low:
+        return "inflation"
+    if "compound interest" in low or "compounding" in low:
+        return "compound interest"
+    if "health insurance" in low:
+        return "health insurance"
     if "insurance" in low or "policy" in low or "nominee" in low:
         return "life insurance policy"
     if "loan" in low or "emi" in low:
@@ -42,8 +52,10 @@ def _infer_topic_from_text(text: str) -> str | None:
         return "AIS and Form 16 salary"
     if "subscription" in low or "streamflix" in low or "cloudnotes" in low:
         return "recurring subscriptions"
-    if "mutual fund" in low or "sip" in low:
-        return "mutual fund investment"
+    if "mutual fund" in low or "sip" in low or "systematic investment" in low:
+        return "SIP and mutual fund investment"
+    if "tax-saving" in low or "tax saving" in low or "80c" in low or "elss" in low or "ppf" in low:
+        return "tax-saving investments"
     return None
 
 

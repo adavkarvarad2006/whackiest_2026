@@ -7,11 +7,14 @@ from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+_BACKEND_ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
+
+
 class Settings(BaseSettings):
     """Runtime configuration for ArthaLens backend."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(_BACKEND_ENV_FILE, ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -19,8 +22,15 @@ class Settings(BaseSettings):
     database_url: str = (
         "postgresql+psycopg://arthalens:arthalens_dev_password@localhost:5432/arthalens"
     )
+    groq_base_url: str = "https://api.groq.com/openai/v1"
     groq_api_key: str = ""
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "qwen/qwen3.8-27b"
+    groq_timeout_seconds: float = 30.0
+    groq_max_retries: int = 2
+
+    def is_groq_configured(self) -> bool:
+        key = (self.groq_api_key or "").strip()
+        return bool(key and key not in ("your_groq_api_key_here", "your_new_groq_api_key"))
 
     embedding_model_name: str = "all-MiniLM-L6-v2"
     embedding_dimension: int = 384

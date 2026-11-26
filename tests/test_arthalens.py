@@ -692,3 +692,438 @@ def test_12_ist_timezone_consistency_and_exports(client_and_db):
     ptxt = "\n".join(pg.get_text() for pg in pdoc)
     pdoc.close()
     assert "IST" in ptxt and "UTC" not in ptxt
+
+
+def test_13_groq_live_integration_and_error_handling(client_and_db, monkeypatch):
+    from unittest.mock import AsyncMock, patch
+    import httpx
+    from app.config import get_settings
+
+    client, _SessionLocal = client_and_db
+    login_a = client.post(
+        "/api/auth/login",
+        json={"email": "ananya.test@example.com", "password": "SecurePassword123!"},
+    )
+    headers_a = {"Authorization": f"Bearer {login_a.json()['access_token']}"}
+    login_b = client.post(
+        "/api/auth/login",
+        json={"email": "other.user@example.com", "password": "SecurePassword123!"},
+    )
+    headers_b = {"Authorization": f"Bearer {login_b.json()['access_token']}"}
+
+    # 1. Missing API key handling -> 503 configuration error (never exposes key)
+    monkeypatch.setenv("GROQ_API_KEY", "")
+    get_settings.cache_clear()
+    try:
+        missing_res = client.post(
+            "/api/chat",
+            headers=headers_a,
+            json={"message": "What is my total insurance coverage?"},
+        )
+        assert missing_res.status_code == 503
+        assert "GROQ_API_KEY" in missing_res.json()["detail"]
+    finally:
+        monkeypatch.delenv("GROQ_API_KEY", raising=False)
+        get_settings.cache_clear()
+
+    # 2. Rate-limit (429) handling with retry & clear upstream error
+    monkeypatch.setenv("GROQ_MAX_RETRIES", "1")
+    get_settings.cache_clear()
+    try:
+        mock_429 = httpx.Response(status_code=429, headers={"retry-after": "0.1"}, json={"error": {"message": "rate limit"}})
+        with patch("app.services.llm.httpx.AsyncClient.post", new=AsyncMock(return_value=mock_429)):
+            rl_res = client.post(
+                "/api/chat",
+                headers=headers_a,
+                json={"message": "Find my recurring subscriptions."},
+            )
+            assert rl_res.status_code == 429
+            assert "rate-limited" in rl_res.json()["detail"].lower()
+    finally:
+        monkeypatch.delenv("GROQ_MAX_RETRIES", raising=False)
+        get_settings.cache_clear()
+
+    # 3. Invalid API key handling against live endpoint (or simulated 401)
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_invalid_test_key_1234567890")
+    monkeypatch.setenv("GROQ_MAX_RETRIES", "0")
+    get_settings.cache_clear()
+    try:
+        inv_res = client.post(
+            "/api/chat",
+            headers=headers_a,
+            json={"message": "What is my total insurance coverage?"},
+        )
+        assert inv_res.status_code in (401, 502)
+        assert "gsk_" not in inv_res.text
+    finally:
+        monkeypatch.delenv("GROQ_API_KEY", raising=False)
+        monkeypatch.delenv("GROQ_MAX_RETRIES", raising=False)
+        get_settings.cache_clear()
+
+    # 4. Missing-document scenario (User B has 0 documents, receives explicit unavailable response)
+    b_res = client.post("/api/chat", headers=headers_b, json={"message": "Do I have any missing nominees?"})
+    assert b_res.status_code == 200
+    assert b_res.json()["confidence"] == "UNAVAILABLE"
+
+    # 5. Live Groq API integration (using key from backend/.env): English QA + citations + Hinglish + Follow-up
+    settings = get_settings()
+    assert settings.is_groq_configured(), "GROQ_API_KEY must be configured in backend/.env"
+
+    live_1 = client.post(
+        "/api/chat",
+        headers=headers_a,
+        json={"message": "Do I have any missing nominee information?"},
+    )
+    assert live_1.status_code == 200, live_1.text
+    d1 = live_1.json()
+    assert d1["answer"]
+    assert d1["timestamp"].endswith("+05:30")
+    assert len(d1["citations"]) >= 1
+    assert any("Insurance_Policy" in (c.get("filename") or c.get("document") or "") for c in d1["citations"])
+    cid = d1["conversation_id"]
+
+    # Follow-up in same conversation (maintaining context; handles free-tier 429 cleanly if burst-limited)
+    import time
+    time.sleep(1.5)
+    live_2 = client.post(
+        "/api/chat",
+        headers=headers_a,
+        json={"message": "What should I fix first?", "conversation_id": cid},
+    )
+    assert live_2.status_code == 200, live_2.text
+    assert live_2.json()["conversation_id"] == cid
+
+    # Hinglish + streaming endpoint with real Groq (allow TPM window refill cleanly after 2 live calls)
+    time.sleep(15.0)
+    stream_res = client.post(
+        "/api/chat/stream",
+        headers=headers_a,
+        json={"message": "Mere kitne bank accounts hain?"},
+    )
+    assert stream_res.status_code == 200, stream_res.text
+    assert "data: " in stream_res.text
+    assert '"Hinglish"' in stream_res.text
+
+    # Clear all chat history for User A
+    clr = client.delete("/api/chat/history", headers=headers_a)
+    assert clr.status_code == 200
+    assert clr.json()["cleared"] is True
+    assert client.get("/api/chat/history", headers=headers_a).json() == []
+
+
+def test_14_three_tier_intelligent_routing_and_general_knowledge(client_and_db):
+    """Verify GENERAL_KNOWLEDGE, PERSONAL_FINANCIAL_DATA, HYBRID_QUERY routing, Hinglish concepts, and multi-turn switches."""
+    from unittest.mock import patch
+    from app.services.nlp.intent import classify_intent
+    from app.services.nlp.lexical import analyze_lexical
+    from app.services.nlp.syntactic import analyze_syntax
+
+    client, _SessionLocal = client_and_db
+    login_a = client.post(
+        "/api/auth/login",
+        json={"email": "ananya.test@example.com", "password": "SecurePassword123!"},
+    )
+    headers_a = {"Authorization": f"Bearer {login_a.json()['access_token']}"}
+    login_b = client.post(
+        "/api/auth/login",
+        json={"email": "other.user@example.com", "password": "SecurePassword123!"},
+    )
+    headers_b = {"Authorization": f"Bearer {login_b.json()['access_token']}"}
+
+    # 1. General Financial Knowledge variants (including Hinglish & definitions)
+    for gq, expected_lang in (
+        ("What is an FD?", "English"),
+        ("What is FD?", "English"),
+        ("FD kya hota hai?", "Hinglish"),
+        ("Explain fixed deposits.", "English"),
+        ("FD kaise work karta hai?", "Hinglish"),
+        ("Fixed deposit meaning?", "English"),
+        ("Difference between FD and RD?", "English"),
+        ("What is compound interest?", "English"),
+        ("Explain SIP with an example.", "English"),
+        ("What is a credit score?", "English"),
+        ("Explain inflation.", "English"),
+        ("How does health insurance work?", "English"),
+        ("What are tax-saving investments?", "English"),
+    ):
+        lx = analyze_lexical(gq)
+        sx = analyze_syntax(lx)
+        ir = classify_intent(lx, sx)
+        assert lx.language == expected_lang, f"{gq} expected lang {expected_lang}, got {lx.language}"
+        assert ir.query_category == "GENERAL_KNOWLEDGE", f"{gq} got category {ir.query_category}"
+        assert ir.processing_route == "GENERAL_LLM"
+
+    # 2. Personal Financial Data queries
+    for pq in (
+        "When will my FD mature?",
+        "How many FDs do I have?",
+        "What is my total FD amount?",
+        "Who is my insurance nominee?",
+        "Summarize my bank statement.",
+        "What is my monthly EMI?",
+    ):
+        lx = analyze_lexical(pq)
+        sx = analyze_syntax(lx)
+        ir = classify_intent(lx, sx)
+        assert ir.query_category == "PERSONAL_FINANCIAL_DATA", f"{pq} got {ir.query_category}"
+
+    # 3. Hybrid Queries
+    for hq in (
+        "Is my FD interest rate good?",
+        "Am I paying too much in insurance premiums?",
+        "Is my current investment allocation diversified?",
+        "Is my investment portfolio diversified?",
+        "Explain whether my loan interest rate is high.",
+    ):
+        lx = analyze_lexical(hq)
+        sx = analyze_syntax(lx)
+        ir = classify_intent(lx, sx)
+        assert ir.query_category == "HYBRID_QUERY", f"{hq} got {ir.query_category}"
+        assert ir.processing_route == "HYBRID_REASONING"
+
+    # 4. Empty Document Library (User B has 0 docs) MUST answer GENERAL_KNOWLEDGE cleanly without RAG or doc warnings
+    mock_general = {
+        "answer": "A Fixed Deposit (FD) is a bank term deposit earning fixed interest. For example, ₹1,00,000 deposited for 1 year grows at the agreed rate. Pros: predictable returns; Cons: premature withdrawal penalty.",
+        "confidence": "HIGH",
+        "sources": [{"document": "fake_hallucinated.pdf", "page": 1}],
+        "disclaimer": "Educational explanation only.",
+    }
+    with patch("app.services.chat.generate_grounded_answer", return_value=mock_general) as m_llm, patch(
+        "app.services.chat.retrieve_multi_query_chunks"
+    ) as m_rag:
+        empty_gen_res = client.post("/api/chat", headers=headers_b, json={"question": "What is an FD?"})
+        assert empty_gen_res.status_code == 200
+        gb = empty_gen_res.json()
+        assert gb["query_category"] == "GENERAL_KNOWLEDGE"
+        assert gb["retrieval_mode"] == "GENERAL_LLM"
+        assert gb["citations"] == []  # Strictly strip any fake citations on GENERAL_KNOWLEDGE
+        assert m_rag.call_count == 0
+        assert m_llm.call_count == 1
+
+    # 5. Multi-turn context: GENERAL_KNOWLEDGE -> general follow-up -> PERSONAL_FINANCIAL_DATA switch
+    mock_fd_gen = {"answer": "An FD is a fixed-tenure term deposit.", "confidence": "HIGH", "sources": []}
+    mock_fd_benefits = {"answer": "Key FD benefits include capital stability and predictable returns.", "confidence": "HIGH", "sources": []}
+    mock_fd_personal = {
+        "answer": "Your uploaded FD certificate shows Fixed Deposit DEMO-FD-XX2184 maturing on 25-Jun-2026.",
+        "confidence": "HIGH",
+        "sources": [{"document": "FD_Certificate.pdf", "page": 1, "evidence": "Maturity Date: 25-Jun-2026"}],
+    }
+    with patch("app.services.chat.generate_grounded_answer", side_effect=[mock_fd_gen, mock_fd_benefits, mock_fd_personal]), patch(
+        "app.services.chat.retrieve_multi_query_chunks", wraps=__import__("app.services.chat", fromlist=["retrieve_multi_query_chunks"]).retrieve_multi_query_chunks
+    ) as spy_rag:
+        t1 = client.post("/api/chat", headers=headers_a, json={"question": "What is an FD?"})
+        assert t1.status_code == 200
+        d1 = t1.json()
+        cid = d1["conversation_id"]
+        assert d1["query_category"] == "GENERAL_KNOWLEDGE"
+        assert d1["retrieval_mode"] == "GENERAL_LLM"
+        assert spy_rag.call_count == 0
+
+        t2 = client.post("/api/chat", headers=headers_a, json={"question": "What are its benefits?", "conversation_id": cid})
+        assert t2.status_code == 200
+        d2 = t2.json()
+        assert d2["query_category"] == "GENERAL_KNOWLEDGE"
+        assert d2["retrieval_mode"] == "GENERAL_LLM"
+        assert spy_rag.call_count == 0
+
+        t3 = client.post("/api/chat", headers=headers_a, json={"question": "What about my FD?", "conversation_id": cid})
+        assert t3.status_code == 200
+        d3 = t3.json()
+        assert d3["query_category"] == "PERSONAL_FINANCIAL_DATA"
+        assert spy_rag.call_count == 1
+        assert len(d3["citations"]) >= 1
+
+
+def test_15_ai_action_automation_workflows_and_security(client_and_db):
+    """Test all 10 Fix Wizard Automation scenarios: workflows, forms, approval, PDF evidence, failure, & security."""
+    import pymupdf
+    from sqlalchemy import select
+    from app.models import FinancialAsset
+
+    client, SessionLocal = client_and_db
+    login_a = client.post(
+        "/api/auth/login",
+        json={"email": "ananya.test@example.com", "password": "SecurePassword123!"},
+    )
+    headers_a = {"Authorization": f"Bearer {login_a.json()['access_token']}"}
+    user_a_id = login_a.json()["user"]["id"]
+
+    login_b = client.post(
+        "/api/auth/login",
+        json={"email": "other.user@example.com", "password": "SecurePassword123!"},
+    )
+    headers_b = {"Authorization": f"Bearer {login_b.json()['access_token']}"}
+
+    # Fetch automation tasks across all User A findings
+    tasks_res = client.get("/api/automation/tasks", headers=headers_a)
+    assert tasks_res.status_code == 200
+    tasks = tasks_res.json()["tasks"]
+    by_wf = {t["workflow_type"]: t for t in tasks}
+
+    # Verify required classifications & workflows exist
+    assert "NOMINEE_VERIFICATION" in by_wf
+    assert "FD_MATURITY" in by_wf
+    assert "SUBSCRIPTION_AUDIT" in by_wf
+    assert "TAX_RECONCILIATION" in by_wf
+    assert "BANK_ACCOUNT_VERIFICATION" in by_wf
+
+    # 1. FD Maturity Reminder + Renewal Comparison + Bank Enquiry Draft
+    rem_res = client.get("/api/automation/reminders", headers=headers_a)
+    assert rem_res.status_code == 200
+    rems = rem_res.json()["reminders"]
+    assert any(r["reminder_type"] == "FD_MATURITY" for r in rems)
+    fd_task = client.post(
+        f"/api/automation/findings/{by_wf['FD_MATURITY']['finding_id']}/automate",
+        headers=headers_a,
+        json={"use_groq": False},
+    ).json()
+    assert fd_task["automation_level"] == "AUTOMATABLE_WITH_USER_APPROVAL"
+    assert "renewal_comparison" in fd_task["workflow_data"]["fd_analysis"]
+    assert fd_task["draft_email"]
+
+    # 2. Subscription Detection + Annual Expenditure + Official Cancellation Links
+    sub_task = by_wf["SUBSCRIPTION_AUDIT"]
+    assert sub_task["estimated_impact_inr"] and sub_task["estimated_impact_inr"] > 0
+    assert len(sub_task["workflow_data"]["subscription_audit"]["merchants"]) >= 1
+
+    # 3. Tax Discrepancy (AIS vs Form 16) + Advisor Questions
+    tax_task = by_wf["TAX_RECONCILIATION"]
+    tax_info = tax_task["workflow_data"]["tax_reconciliation"]
+    assert tax_info["discrepancy_inr"] > 0
+    assert len(tax_info["questions_for_tax_professional"]) >= 2
+
+    # 4. Security Guardrails: unauthorized autonomous actions blocked & audited; cross-user blocked
+    nom_fid = by_wf["NOMINEE_VERIFICATION"]["finding_id"]
+    for forbidden in ("AUTO_SUBMIT_FORM", "PORTAL_LOGIN_WITH_CREDENTIALS", "MODIFY_BANK_NOMINEE", "EXECUTE_TRANSACTION", "AUTO_CANCEL_POLICY"):
+        sec_res = client.post(
+            f"/api/automation/findings/{nom_fid}/execute-protected",
+            headers=headers_a,
+            json={"action_type": forbidden},
+        )
+        assert sec_res.status_code == 403
+    assert client.get(f"/api/automation/findings/{nom_fid}", headers=headers_b).status_code == 404
+
+    # Cannot mark external nominee finding completed without verified proof
+    unver_res = client.post(
+        f"/api/automation/findings/{nom_fid}/verify",
+        headers=headers_a,
+        json={},
+    )
+    assert unver_res.status_code == 200
+    assert unver_res.json()["task_status"] in ("Verification Required", "Failed")
+    bad_fix = client.post(
+        f"/api/findings/{nom_fid}/fix",
+        headers=headers_a,
+        json={"verification_evidence": "Downloaded form only"},
+    )
+    assert bad_fix.status_code == 400
+
+    # 5. Nominee Verification Flow: Automate -> Generate Request -> Download Form (never completes!) -> Approve Draft
+    auto_nom = client.post(
+        f"/api/automation/findings/{nom_fid}/automate",
+        headers=headers_a,
+        json={"use_groq": False},
+    ).json()
+    assert auto_nom["automation_level"] == "GUIDED_EXTERNAL_ACTION"
+    assert auto_nom["task_status"] == "In Progress"
+    assert auto_nom["extracted_entities"]["insurer_name"]
+    assert auto_nom["extracted_entities"]["policy_number"]
+    assert auto_nom["institution_directory"]["form_name"]
+
+    dl_res = client.get(f"/api/automation/findings/{nom_fid}/download-form", headers=headers_a)
+    assert dl_res.status_code == 200
+    assert dl_res.headers["content-type"].startswith("application/pdf")
+    assert dl_res.content[:5] == b"%PDF-"
+    after_dl = client.get(f"/api/automation/findings/{nom_fid}", headers=headers_a).json()
+    assert after_dl["task_status"] != "Completed"  # Downloading form NEVER completes verification!
+
+    app_res = client.post(
+        f"/api/automation/findings/{nom_fid}/approve",
+        headers=headers_a,
+        json={"approved": True, "notes": "Reviewed policy info and email draft"},
+    )
+    assert app_res.status_code == 200
+    app_data = app_res.json()
+    assert app_data["approval_granted"] is True
+    assert app_data["task_status"] == "Awaiting External Confirmation"
+
+    # 6. Failed Verification: Mismatched policy reference or blank nominee fails cleanly
+    wrong_pdf_doc = pymupdf.open()
+    wp = wrong_pdf_doc.new_page()
+    wp.insert_text((50, 80), "Nominee Endorsement for Policy XX-LI-999999\nNominee Name: Wrong User\nEndorsement Ref: END-0001")
+    wrong_pdf_bytes = wrong_pdf_doc.tobytes()
+    wrong_pdf_doc.close()
+
+    fail_up = client.post(
+        f"/api/automation/findings/{nom_fid}/evidence",
+        headers=headers_a,
+        data={"evidence_type": "Uploaded Endorsement"},
+        files={"file": ("wrong_endorsement.pdf", wrong_pdf_bytes, "application/pdf")},
+    )
+    assert fail_up.status_code == 200
+    fd_json = fail_up.json()
+    assert fd_json["task_status"] == "Failed"
+    assert fd_json["latest_evidence"]["verification_status"] == "FAILED"
+
+    # 7. Real Evidence Upload + Automatic Extraction & Completion
+    target_ref = auto_nom["account_or_policy_ref"] or "SG-LI-0000"
+    ok_doc = pymupdf.open()
+    op = ok_doc.new_page()
+    op.insert_text(
+        (50, 80),
+        f"OFFICIAL NOMINATION ENDORSEMENT CONFIRMATION\n"
+        f"Policy Reference: {target_ref}\n"
+        f"Nominee Name: Rohan Sharma (Spouse)\n"
+        f"Endorsement Ref: SR-NOM-88421\n"
+        f"Confirmation Date: 27-Nov-2026\n"
+        f"Status: Section 39 Nomination Confirmed & Registered",
+    )
+    ok_pdf_bytes = ok_doc.tobytes()
+    ok_doc.close()
+
+    pass_up = client.post(
+        f"/api/automation/findings/{nom_fid}/evidence",
+        headers=headers_a,
+        data={"evidence_type": "Uploaded Endorsement"},
+        files={"file": ("nominee_endorsement.pdf", ok_pdf_bytes, "application/pdf")},
+    )
+    assert pass_up.status_code == 200
+    pj = pass_up.json()
+    assert pj["task_status"] == "Completed"
+    assert pj["latest_evidence"]["verification_status"] == "VERIFIED"
+    assert pj["latest_evidence"]["extracted_data"]["nominee_name"].startswith("Rohan Sharma")
+    assert pj["latest_evidence"]["extracted_data"]["endorsement_reference"] == "SR-NOM-88421"
+
+    # Verify Finding status updated to RESOLVED and FinancialAsset updated to RECORDED, plus audit trail
+    resolved_f = next(f for f in client.get("/api/findings", headers=headers_a).json() if f["id"] == nom_fid)
+    assert resolved_f["status"] == "Resolved"
+    with SessionLocal() as db:
+        ins_assets = list(db.scalars(select(FinancialAsset).where(FinancialAsset.user_id == user_a_id, FinancialAsset.asset_type == "LIFE_INSURANCE")))
+        assert any(a.nominee_status == "RECORDED" for a in ins_assets)
+
+    logs = client.get(f"/api/automation/findings/{nom_fid}/audit-logs", headers=headers_a).json()["logs"]
+    act_names = {l["action"] for l in logs}
+    assert {"PLAN_GENERATED", "FORM_DOWNLOADED", "DRAFT_APPROVED", "VERIFICATION_FAILED", "VERIFICATION_PASSED", "UNAUTHORIZED_ACTION_BLOCKED"} <= act_names
+
+    # 8. Missing Loan Statement Detection + Loan Management Workflow (User C with Bank Statement ONLY)
+    client.post(
+        "/api/auth/register",
+        json={"name": "Loan Gap Tester", "email": "loangap.test@example.com", "password": "SecurePassword123!"},
+    )
+    login_c = client.post(
+        "/api/auth/login",
+        json={"email": "loangap.test@example.com", "password": "SecurePassword123!"},
+    )
+    headers_c = {"Authorization": f"Bearer {login_c.json()['access_token']}"}
+    bank_pdf = DATASET_DOCS / "Bank_Statement.pdf"
+    with open(bank_pdf, "rb") as fp:
+        up_c = client.post(
+            "/api/documents/upload",
+            headers=headers_c,
+            files={"file": ("Bank_Statement.pdf", fp, "application/pdf")},
+        )
+    assert up_c.status_code in (200, 201)
+    tasks_c = client.get("/api/automation/tasks", headers=headers_c).json()["tasks"]
+    loan_tasks = [t for t in tasks_c if t["workflow_type"] == "LOAN_MANAGEMENT"]
+    assert len(loan_tasks) >= 1
+    assert loan_tasks[0]["draft_email"] and loan_tasks[0]["workflow_data"]["loan_analysis"]["monthly_emi_inr"] > 0

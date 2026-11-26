@@ -154,26 +154,44 @@ def detect_ambiguity(
 
 
 def build_followup_suggestions(intent_res: IntentResult, language: str) -> list[str]:
-    """Provide context-aware follow-up suggestions in the user's language."""
+    """Provide context-aware follow-up suggestions in the user's language and query tier."""
+    if intent_res.query_category == "GENERAL_KNOWLEDGE":
+        if language == "Hinglish":
+            general_hi = {
+                "FD_QUERY": ["Iske fayde aur nuksan kya hain?", "Mera FD kab mature hoga?"],
+                "INVESTMENT_QUERY": ["Iske advantages kya hain?", "Mera investment portfolio diversified hai kya?"],
+                "INSURANCE_QUERY": ["Term insurance aur health insurance mein kya fark hai?", "Meri insurance policy explain karo."],
+                "CREDIT_SCORE_QUERY": ["Credit score kaise improve karein?", "Kya mera loan interest rate high hai?"],
+            }
+            return general_hi.get(intent_res.intent, ["Iska ek simple example do.", "Mere financial documents check karo."])
+        general_en = {
+            "FD_QUERY": ["What are its benefits?", "What about my FD?"],
+            "INVESTMENT_QUERY": ["What are its advantages and risks?", "Is my investment portfolio diversified?"],
+            "INSURANCE_QUERY": ["What is the difference between term and health insurance?", "Explain my insurance policy."],
+            "CREDIT_SCORE_QUERY": ["How can someone improve a credit score?", "Is my loan interest rate high?"],
+        }
+        return general_en.get(intent_res.intent, ["Can you give a practical example?", "What about my financial records?"])
+
     if language == "Hinglish":
         mapping = {
-            "FD_QUERY": ["Iska principal aur interest kitna hai?", "Kya isme auto-renewal enabled hai?"],
+            "FD_QUERY": ["Iska principal aur interest kitna hai?", "Kya mera FD interest rate accha hai?"],
             "NOMINEE_QUERY": ["Kaunsi document page par nominee blank hai?", "Meri FD mein nominee hai kya?"],
             "BANK_ACCOUNT_QUERY": ["AIS mein kaunsa bank account extra dikh raha hai?", "Har mahine kitne bank charges lag rahe hain?"],
             "SALARY_QUERY": ["AIS aur Form 16 mein kitna difference hai?", "Mera taxable income kitna hai?"],
-            "LOAN_QUERY": ["Mera monthly EMI bank statement se match hota hai?", "Agle EMI dates kab hain?"],
+            "LOAN_QUERY": ["Mera monthly EMI bank statement se match hota hai?", "Kya mera loan interest rate high hai?"],
         }
         return mapping.get(intent_res.intent, ["Mere finances mein koi risk ya gap hai kya?", "Mera FD kab mature hoga?"])
 
     mapping_en = {
-        "FD_QUERY": ["What is its principal amount?", "What about the interest rate and auto-renewal status?"],
+        "FD_QUERY": ["What is its principal amount?", "Is my FD interest rate good?"],
         "NOMINEE_QUERY": ["Which document supports this finding?", "Do my fixed deposits have nominees registered?"],
         "BANK_ACCOUNT_QUERY": ["Is any account appearing in AIS missing from my bank statement?", "What is my closing balance?"],
         "SALARY_QUERY": ["Is there any discrepancy between AIS and Form 16?", "What deductions did I claim u/s 80C?"],
         "SUBSCRIPTION_QUERY": ["What are all my recurring monthly expenses?", "Are there any bank maintenance fees?"],
-        "LOAN_QUERY": ["Does my bank statement match my loan EMI?", "When are my upcoming EMI due dates?"],
+        "LOAN_QUERY": ["Does my bank statement match my loan EMI?", "Explain whether my loan interest rate is high."],
+        "INVESTMENT_QUERY": ["Is my investment portfolio diversified?", "How does compounding help long-term investments?"],
     }
     return mapping_en.get(
         intent_res.intent,
-        ["Anything I should worry about in my finances?", "Show all financial assets discovered."],
+        ["Anything I should worry about in my finances?", "Is my investment portfolio diversified?"],
     )

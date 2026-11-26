@@ -13,11 +13,15 @@ HINGLISH_MARKERS = {
     "hoga", "hogi", "kahan", "kyun", "kyu", "uska", "uski", "iska", "iski", "wala",
     "wali", "liye", "saal", "baki", "bacha", "lag", "gaya", "huye", "kare", "karna",
     "chahiye", "theek", "sahi", "galat", "zyada", "kam", "sabhi", "saare",
+    "hota", "hoti", "hote", "kaise", "kaam", "karta", "karti", "karte", "matlab",
+    "samjhao", "fayde", "nuksan", "fark", "antar", "behtar", "achha", "accha",
 }
 
 ABBREVIATIONS = {
     "fd": "fixed deposit",
     "fds": "fixed deposit",
+    "rd": "recurring deposit",
+    "rds": "recurring deposit",
     "emi": "equated monthly instalment loan payment",
     "emis": "equated monthly instalment loan payment",
     "mf": "mutual fund",
@@ -29,6 +33,12 @@ ABBREVIATIONS = {
     "amc": "annual account maintenance charge bank fee",
     "ppf": "public provident fund",
     "epf": "employees provident fund",
+    "elss": "equity linked saving scheme",
+    "nps": "national pension system",
+    "cibil": "credit score",
+    "nav": "net asset value",
+    "roi": "return on investment",
+    "kyc": "know your customer",
     "cc": "credit card",
     "it": "income tax",
     "itr": "income tax return",
@@ -46,12 +56,19 @@ SYNONYM_PHRASES = [
     (r"\b(expire|expires|expiring|due for maturity|maturing)\b", "mature maturity expire"),
     # Hinglish -> English semantic normalization
     (r"\b(kab mature hoga|kab mature hogi|maturity kab)\b", "when does fixed deposit mature"),
+    (r"\b(kya hota hai|kya hoti hai|kya hote hain|ka matlab|meaning kya)\b", "what is meaning explain"),
+    (r"\b(kaise work karta hai|kaise kaam karta hai|kaise chalta hai|kaise hota hai|kaise work karta|kaise kaam karta)\b", "how does work"),
     (r"\b(kitna outstanding|kitna loan baki|kitna bacha)\b", "how much loan outstanding principal balance"),
     (r"\b(har mahine|prati maah)\b", "every month monthly"),
     (r"\b(paisa kat raha|paise kat rahe|paisa kahan ja raha)\b", "money deducted recurring expense subscription charge"),
     (r"\b(nahi hai|nahi hain|nhi hai|missing hai|missing hain|nahi diya)\b", "missing not available"),
     (r"\b(kaunse|kaunsi|kaun sa|kaun si)\b", "which"),
     (r"\b(kitna|kitne|kitni)\b", "how much"),
+    (r"\b(fayde|labh)\b", "advantages benefits"),
+    (r"\b(nuksan|khamiyan)\b", "disadvantages drawbacks"),
+    (r"\b(fark|antar)\b", "difference"),
+    (r"\b(behtar|achha|accha|theek|sahi)\b", "good better"),
+    (r"\b(zyada|jada)\b", "high too much"),
     (r"\b(aur)\b", "and"),
     (r"\b(mein|me)\b", "in"),
     (r"\b(koi mismatch|koi farq|koi difference|mismatch hai kya)\b", "discrepancy mismatch difference"),
@@ -103,6 +120,9 @@ FINANCIAL_VOCAB = sorted(
         "deposit", "account", "savings", "maintenance", "recurring", "dividend", "balance",
         "premium", "deduction", "exemption", "taxable", "prepared", "summary", "overview",
         "blindspot", "verification", "credit", "mutual", "provident", "forgotten", "dormant",
+        "inflation", "compound", "compounding", "benefit", "advantage", "disadvantage",
+        "diversified", "diversification", "portfolio", "allocation", "difference",
+        "systematic", "health", "cibil", "scheme", "return",
     }
 )
 

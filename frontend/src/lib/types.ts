@@ -56,9 +56,117 @@ export interface EvidenceDetail {
   fact_label: string;
 }
 
+export interface FindingAutomationSummary {
+  workflow_type: string;
+  automation_level: AutomationLevel;
+  task_status: AutomationTaskStatus;
+  required_approval: boolean;
+  approval_granted: boolean;
+  institution_name?: string | null;
+  account_or_policy_ref?: string | null;
+  estimated_impact_inr?: number | null;
+}
+
+export type AutomationLevel =
+  | "FULLY_AUTOMATABLE"
+  | "AUTOMATABLE_WITH_USER_APPROVAL"
+  | "GUIDED_EXTERNAL_ACTION"
+  | "MANUAL_VERIFICATION_REQUIRED";
+
+export type AutomationTaskStatus =
+  | "Not Started"
+  | "In Progress"
+  | "Awaiting External Confirmation"
+  | "Evidence Received"
+  | "Verification Required"
+  | "Completed"
+  | "Failed";
+
+export interface AutomationStep {
+  id: string;
+  label: string;
+  execution_mode: "AUTO_INTERNAL" | "USER_APPROVAL" | "EXTERNAL_INSTITUTION" | "EVIDENCE_VERIFY";
+  completed: boolean;
+}
+
+export interface ActionEvidenceItem {
+  id: string;
+  evidence_type: string;
+  filename?: string | null;
+  extracted_data: Record<string, unknown>;
+  verification_status: "VERIFIED" | "FAILED" | "NEEDS_REVIEW";
+  verification_explanation: string;
+  uploaded_at: string;
+}
+
+export interface ActionAuditLogItem {
+  id: string;
+  action: string;
+  actor: string;
+  previous_status?: string | null;
+  new_status?: string | null;
+  details: string;
+  created_at: string;
+}
+
+export interface FinancialReminderItem {
+  id: string;
+  finding_id?: string;
+  task_id?: string;
+  reminder_type: string;
+  title: string;
+  message: string;
+  due_date?: string | null;
+  days_remaining?: number | null;
+  status: string;
+  created_at?: string;
+}
+
+export interface AutomationTaskDetail {
+  id: string;
+  finding_id: string;
+  workflow_type: string;
+  automation_level: AutomationLevel;
+  task_status: AutomationTaskStatus;
+  required_approval: boolean;
+  approval_granted: boolean;
+  approved_at?: string | null;
+  issue_summary: string;
+  required_action: string;
+  external_institution_required: boolean;
+  institution_name?: string | null;
+  account_or_policy_ref?: string | null;
+  expected_evidence: string;
+  estimated_impact_inr?: number | null;
+  progress_pct: number;
+  steps: AutomationStep[];
+  draft_email?: string | null;
+  ai_generated: boolean;
+  last_verification_summary?: string | null;
+  supports_form_download: boolean;
+  extracted_entities: Record<string, unknown>;
+  institution_directory: {
+    official_name?: string;
+    official_website?: string | null;
+    support_email?: string | null;
+    helpline?: string;
+    form_name?: string;
+    form_code?: string;
+    update_steps?: string[];
+    is_verified_directory?: boolean;
+  };
+  workflow_data: Record<string, unknown>;
+  evidences: ActionEvidenceItem[];
+  audit_logs: ActionAuditLogItem[];
+  reminders: FinancialReminderItem[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface FindingItem {
   id: string;
   user_id: string;
+  finding_type?: string;
   title: string;
   category: string;
   severity: Severity;
@@ -75,6 +183,7 @@ export interface FindingItem {
   resolution_evidence?: string | null;
   resolved_at?: string | null;
   created_at?: string | null;
+  automation?: FindingAutomationSummary | null;
 }
 
 export interface NomineeAssetTile {
@@ -137,10 +246,14 @@ export interface ChatResponse {
   language?: string;
   confidence: ChatConfidence;
   sources: ChatSource[];
+  citations?: ChatSource[];
   needs_clarification?: boolean;
   clarification_options?: string[];
   followup_suggestions?: string[];
   conversation_id: string;
+  retrieval_mode?: string;
+  query_category?: string;
+  timestamp?: string;
   is_mock?: boolean;
 }
 
@@ -155,6 +268,8 @@ export interface ChatMessage {
   needs_clarification?: boolean;
   clarification_options?: string[];
   followup_suggestions?: string[];
+  retrieval_mode?: string;
+  query_category?: string;
   created_at: string;
   is_mock?: boolean;
 }

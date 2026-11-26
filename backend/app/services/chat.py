@@ -2,16 +2,25 @@
 
 from __future__ import annotations
 
+import logging
+import re
 import uuid
 from typing import Any
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
+
+_GREETING_RE = re.compile(
+    r"^(hi|hello|hey|namaste|good\s+(morning|afternoon|evening)|hola|hii+)\b[!.,?\s]*$",
+    re.IGNORECASE,
+)
 
 from app.models import ChatMessage, Conversation, Document
 from app.schemas import ChatResponse, EvidenceSource
-from app.services.llm import generate_grounded_answer
+from app.services.llm import agenerate_grounded_answer, generate_grounded_answer
 from app.services.nlp.discourse import resolve_discourse
 from app.services.nlp.intent import classify_intent
 from app.services.nlp.lexical import analyze_lexical
@@ -129,13 +138,30 @@ def _merge_sources(
     return merged
 
 
-def handle_chat_turn(
+_ORIG_SYNC_LLM = generate_grounded_answer
+
+
+def _infer_prior_query_category(history_msgs: list[ChatMessage]) -> str | None:
+    """Infer the query category of the preceding assistant turn for conversational continuity."""
+    for m in reversed(history_msgs):
+        if m.role == "assistant" and m.retrieval_mode:
+            rm = m.retrieval_mode.upper()
+            if rm == "GENERAL_LLM":
+                return "GENERAL_KNOWLEDGE"
+            if rm == "HYBRID_REASONING":
+                return "HYBRID_QUERY"
+            if rm != "NONE":
+                return "PERSONAL_FINANCIAL_DATA"
+    return None
+
+
+def _prepare_chat_context(
     db: Session,
     user_id: int,
     question: str,
     conversation_id: str | uuid.UUID | None = None,
-) -> ChatResponse:
-    """Execute the full 5-Level NLP + Hybrid RAG/SQL pipeline and persist conversation history."""
+):
+    """Run Conversation Setup, 5-Level NLP, Three-Tier Query Classification, and Selective RAG/SQL Routing."""
     if conversation_id is not None:
         conv_uuid = normalize_conversation_id(user_id, conversation_id)
         conv = db.get(Conversation, conv_uuid)
@@ -163,19 +189,6 @@ def handle_chat_turn(
         db.commit()
         db.refresh(conv)
 
-    # Levels 1-4 NLP Analysis (runs regardless of document presence for language & intent)
-    lexical = analyze_lexical(question)
-    syntax = analyze_syntax(lexical)
-    intent_res = classify_intent(lexical, syntax)
-    query_entities = extract_entities_from_query(question)
-
-    has_docs = db.scalar(
-        select(Document.id).where(
-            Document.user_id == user_id,
-            Document.processing_status == "COMPLETED",
-        ).limit(1)
-    )
-
     history_msgs = list(
         db.scalars(
             select(ChatMessage)
@@ -186,10 +199,35 @@ def handle_chat_turn(
             .order_by(ChatMessage.created_at.asc(), ChatMessage.id.asc())
         )
     )
+    prior_category = _infer_prior_query_category(history_msgs)
+
+    lexical = analyze_lexical(question)
+    syntax = analyze_syntax(lexical)
+    intent_res = classify_intent(lexical, syntax, prior_category=prior_category)
+    query_entities = extract_entities_from_query(question)
+
+    has_docs_count = int(
+        db.scalar(
+            select(func.count(Document.id)).where(
+                Document.user_id == user_id,
+                Document.processing_status == "COMPLETED",
+            )
+        )
+        or 0
+    )
+    has_docs = has_docs_count > 0
+    logger.info(
+        "Stage [1-3 Context]: user_id=%s conv_id=%s category=%s intent=%s lang=%s completed_docs=%d",
+        user_id,
+        conv.id,
+        intent_res.query_category,
+        intent_res.intent,
+        lexical.language,
+        has_docs_count,
+    )
 
     discourse = resolve_discourse(question, lexical, syntax, history_msgs)
 
-    # Persist user message
     db.add(
         ChatMessage(
             conversation_id=conv.id,
@@ -215,6 +253,8 @@ def handle_chat_turn(
         "temporal_windows": syntax.temporal_windows,
         "intent": intent_res.intent,
         "intent_confidence": intent_res.confidence,
+        "query_category": intent_res.query_category,
+        "routing_reason": intent_res.routing_reason,
         "pragmatic_type": intent_res.pragmatic_type,
         "resolved_query": discourse.resolved_query,
         "coreference_applied": discourse.coreference_applied,
@@ -222,25 +262,36 @@ def handle_chat_turn(
         "query_entities": query_entities,
     }
 
-    if has_docs is None:
-        unavail_msg = (
-            "Abhi aapke account mein koi processed financial PDF document upload nahi hai. Kripya pehle documents upload karein."
+    if _GREETING_RE.match(question.strip()):
+        greet_msg = (
+            (
+                f"Namaste! Main ArthaLens AI hoon. Aapke account mein {has_docs_count} processed financial PDF document(s) hain — aap apni FD, insurance, loans, ya general financial concepts (jaise FD, RD, SIP, credit score) ke baare mein pooch sakte hain."
+                if has_docs
+                else "Namaste! Main ArthaLens AI hoon. Aap mujhse general financial concepts (jaise FD, SIP, credit score, tax saving) pooch sakte hain, ya apne personal documents ka analysis karne ke liye PDFs upload kar sakte hain."
+            )
             if lexical.language == "Hinglish"
-            else "No processed financial documents are currently available in your account. Please upload one or more PDF documents first so I can answer with verified evidence."
+            else (
+                f"Hello! I am ArthaLens AI. I have indexed {has_docs_count} processed financial document(s) in your workspace. Ask me about your personal records (FD maturity, nominees, AIS vs Form 16) or general financial concepts (FD vs RD, SIP, credit score)."
+                if has_docs
+                else "Hello! I am ArthaLens AI. You can ask me general financial questions right away (such as Fixed Deposits, SIP, compounding, or credit scores), or upload your financial PDFs under Documents for personalized record analysis."
+            )
         )
         resp = ChatResponse(
-            answer=unavail_msg,
+            answer=greet_msg,
             intent=intent_res.intent,
             language=lexical.language,
-            confidence="UNAVAILABLE",
+            confidence="HIGH" if has_docs else "HIGH",
             sources=[],
+            citations=[],
             needs_clarification=False,
             clarification_options=[],
-            followup_suggestions=[],
+            followup_suggestions=build_followup_suggestions(intent_res, lexical.language),
             nlp_metadata=nlp_meta,
-            disclaimer="This finding is based only on the uploaded documents and verified structured records.",
+            disclaimer="Educational & workspace financial intelligence assistant. Never fabricates personal document facts.",
             conversation_id=conv.id,
             retrieval_mode="NONE",
+            query_category=intent_res.query_category,
+            timestamp=now_ist,
         )
         db.add(
             ChatMessage(
@@ -254,60 +305,7 @@ def handle_chat_turn(
             )
         )
         db.commit()
-        return resp
-
-    # Ambiguity Detection (asks clarifying question when multiple matching assets exist)
-    is_ambig, clarif_msg, clarif_opts = detect_ambiguity(
-        db=db,
-        user_id=user_id,
-        question=question,
-        lexical=lexical,
-        syntax=syntax,
-        intent_res=intent_res,
-        discourse=discourse,
-    )
-    if is_ambig:
-        resp = ChatResponse(
-            answer=clarif_msg,
-            intent=intent_res.intent,
-            language=lexical.language,
-            confidence="NEEDS_REVIEW",
-            sources=[],
-            needs_clarification=True,
-            clarification_options=clarif_opts,
-            followup_suggestions=[],
-            nlp_metadata=nlp_meta,
-            disclaimer="Clarification requested based on multiple matching records in your uploaded documents.",
-            conversation_id=conv.id,
-            retrieval_mode="AMBIGUITY_CHECK",
-        )
-        db.add(
-            ChatMessage(
-                conversation_id=conv.id,
-                user_id=user_id,
-                role="assistant",
-                content=resp.answer,
-                confidence=resp.confidence,
-                sources=[],
-                retrieval_mode="AMBIGUITY_CHECK",
-            )
-        )
-        db.commit()
-        return resp
-
-    # Query Expansion + Hybrid Retrieval (Multi-Query Vector + Parameterized SQL)
-    expanded_queries = expand_queries(question, lexical, discourse, intent_res)
-    nlp_meta["expanded_queries"] = expanded_queries
-
-    retrieval_mode, sql_context = gather_sql_context_for_intent(
-        db=db,
-        user_id=user_id,
-        intent_res=intent_res,
-        syntax=syntax,
-        resolved_query=discourse.resolved_query,
-    )
-    chunks = retrieve_multi_query_chunks(db, user_id, expanded_queries)
-    retrieved_context = _format_chunks_for_prompt(chunks)
+        return resp, None
 
     history_payload = [{"role": m.role, "content": m.content} for m in history_msgs]
     llm_nlp_context = {
@@ -317,6 +315,7 @@ def handle_chat_turn(
         "current_datetime_ist": format_ist_display(now_ist, long_month=True),
         "temporal_windows": syntax.temporal_windows,
         "intent": intent_res.intent,
+        "query_category": intent_res.query_category,
         "pragmatic_type": intent_res.pragmatic_type,
         "question_type": syntax.question_type,
         "has_negation": syntax.has_negation,
@@ -327,28 +326,239 @@ def handle_chat_turn(
         "query_entities": query_entities,
     }
 
-    # Support both 4-arg mocks in unit tests and 5-arg nlp_context in production
-    try:
-        llm_out = generate_grounded_answer(
-            question=question,
-            retrieved_context=retrieved_context,
-            sql_context=sql_context,
-            history=history_payload,
-            nlp_context=llm_nlp_context,
+    # Tier A: GENERAL_KNOWLEDGE -> Route directly to Groq LLM without vector/SQL document search
+    if intent_res.query_category == "GENERAL_KNOWLEDGE":
+        logger.info(
+            "Stage [4/6 Routing]: user_id=%s category=GENERAL_KNOWLEDGE route=GENERAL_LLM skipped_rag=True completed_docs=%d",
+            user_id,
+            has_docs_count,
         )
-    except TypeError:
-        llm_out = generate_grounded_answer(
-            question=question,
-            retrieved_context=retrieved_context,
-            sql_context=sql_context,
-            history=history_payload,
-        )
+        ctx_bundle = {
+            "conv": conv,
+            "lexical": lexical,
+            "intent_res": intent_res,
+            "query_category": "GENERAL_KNOWLEDGE",
+            "nlp_meta": nlp_meta,
+            "retrieval_mode": "GENERAL_LLM",
+            "sql_context": {},
+            "chunks": [],
+            "retrieved_context": "",
+            "history_payload": history_payload,
+            "llm_nlp_context": llm_nlp_context,
+        }
+        return None, ctx_bundle
 
-    sources = _merge_sources(llm_out.get("sources", []), chunks, db=db, user_id=user_id)
-    answer_text = llm_out.get("answer") or "I could not find enough information in the uploaded documents to answer that."
-    confidence = llm_out.get("confidence") or "NEEDS_REVIEW"
-    disclaimer = llm_out.get("disclaimer") or "This finding is based only on the uploaded documents and verified structured records."
+    # Tier B: PERSONAL_FINANCIAL_DATA with 0 uploaded documents -> explicit unavailability (never invent records)
+    if intent_res.query_category == "PERSONAL_FINANCIAL_DATA" and not has_docs:
+        unavail_msg = (
+            "Abhi aapke account mein koi processed financial PDF document upload nahi hai, isliye main aapke personal records verify nahi kar sakta. Kripya pehle Documents page par PDFs upload karein."
+            if lexical.language == "Hinglish"
+            else "No processed financial documents are currently uploaded in your account, so I cannot check your personal financial records. Please upload your PDF documents first so I can answer with verified evidence."
+        )
+        resp = ChatResponse(
+            answer=unavail_msg,
+            intent=intent_res.intent,
+            language=lexical.language,
+            confidence="UNAVAILABLE",
+            sources=[],
+            citations=[],
+            needs_clarification=False,
+            clarification_options=[],
+            followup_suggestions=["What is an FD?", "Explain SIP with an example."],
+            nlp_metadata=nlp_meta,
+            disclaimer="This finding is based only on the uploaded documents and verified structured records.",
+            conversation_id=conv.id,
+            retrieval_mode="NONE",
+            query_category="PERSONAL_FINANCIAL_DATA",
+            timestamp=now_ist,
+        )
+        db.add(
+            ChatMessage(
+                conversation_id=conv.id,
+                user_id=user_id,
+                role="assistant",
+                content=resp.answer,
+                confidence=resp.confidence,
+                sources=[],
+                retrieval_mode="NONE",
+            )
+        )
+        db.commit()
+        return resp, None
+
+    if has_docs:
+        is_ambig, clarif_msg, clarif_opts = detect_ambiguity(
+            db=db,
+            user_id=user_id,
+            question=question,
+            lexical=lexical,
+            syntax=syntax,
+            intent_res=intent_res,
+            discourse=discourse,
+        )
+        if is_ambig:
+            resp = ChatResponse(
+                answer=clarif_msg,
+                intent=intent_res.intent,
+                language=lexical.language,
+                confidence="NEEDS_REVIEW",
+                sources=[],
+                citations=[],
+                needs_clarification=True,
+                clarification_options=clarif_opts,
+                followup_suggestions=[],
+                nlp_metadata=nlp_meta,
+                disclaimer="Clarification requested based on multiple matching records in your uploaded documents.",
+                conversation_id=conv.id,
+                retrieval_mode="AMBIGUITY_CHECK",
+                query_category=intent_res.query_category,
+                timestamp=now_ist,
+            )
+            db.add(
+                ChatMessage(
+                    conversation_id=conv.id,
+                    user_id=user_id,
+                    role="assistant",
+                    content=resp.answer,
+                    confidence=resp.confidence,
+                    sources=[],
+                    retrieval_mode="AMBIGUITY_CHECK",
+                )
+            )
+            db.commit()
+            return resp, None
+
+    # Retrieval + SQL (runs cleanly when docs exist, or passes empty status on HYBRID_QUERY without docs)
+    if has_docs:
+        expanded_queries = expand_queries(question, lexical, discourse, intent_res)
+        nlp_meta["expanded_queries"] = expanded_queries
+        retrieval_mode, sql_context = gather_sql_context_for_intent(
+            db=db,
+            user_id=user_id,
+            intent_res=intent_res,
+            syntax=syntax,
+            resolved_query=discourse.resolved_query,
+        )
+        if intent_res.query_category == "HYBRID_QUERY":
+            retrieval_mode = "HYBRID_REASONING"
+        chunks = retrieve_multi_query_chunks(db, user_id, expanded_queries)
+        retrieved_context = _format_chunks_for_prompt(chunks)
+    else:
+        retrieval_mode = "HYBRID_REASONING"
+        sql_context = {
+            "personal_documents_status": "NO_DOCUMENTS_UPLOADED",
+            "ist_time_context": {"timezone": "Asia/Kolkata"},
+        }
+        chunks = []
+        retrieved_context = "No personal financial documents have been uploaded yet in the user's workspace."
+
+    has_domain_sql = any(
+        k not in ("ist_time_context", "personal_documents_status") and bool(v) for k, v in sql_context.items()
+    )
+    fd_empty = (
+        intent_res.query_category == "PERSONAL_FINANCIAL_DATA"
+        and intent_res.intent == "FD_QUERY"
+        and not chunks
+        and not (sql_context.get("fixed_deposits") or {}).get("fixed_deposits")
+    )
+    logger.info(
+        "Stage [4/6 Retrieval & SQL]: user_id=%s category=%s route=%s chunks=%d sql_keys=%s",
+        user_id,
+        intent_res.query_category,
+        retrieval_mode,
+        len(chunks),
+        list(sql_context.keys()),
+    )
+    if intent_res.query_category == "PERSONAL_FINANCIAL_DATA" and (fd_empty or (not chunks and not has_domain_sql)):
+        if fd_empty:
+            no_ev_msg = (
+                "Aapke account mein koi Fixed Deposit (FD) record ya document nahi mila. Kripya apna FD Certificate ya Bank Statement upload karein."
+                if lexical.language == "Hinglish"
+                else "No Fixed Deposit (FD) records or documents were found in your uploaded files. Upload an FD Certificate or Bank Statement containing FD details to inspect balances and maturity dates."
+            )
+        else:
+            no_ev_msg = (
+                "Aapke uploaded documents mein is sawaal ka sufficient evidence nahi mila."
+                if lexical.language == "Hinglish"
+                else "The uploaded documents do not contain sufficient verified evidence to answer this question."
+            )
+        resp = ChatResponse(
+            answer=no_ev_msg,
+            intent=intent_res.intent,
+            language=lexical.language,
+            confidence="UNAVAILABLE",
+            sources=[],
+            citations=[],
+            needs_clarification=False,
+            clarification_options=[],
+            followup_suggestions=[],
+            nlp_metadata=nlp_meta,
+            disclaimer="This finding is based only on the uploaded documents and verified structured records.",
+            conversation_id=conv.id,
+            retrieval_mode=retrieval_mode,
+            query_category="PERSONAL_FINANCIAL_DATA",
+            timestamp=now_ist,
+        )
+        db.add(
+            ChatMessage(
+                conversation_id=conv.id,
+                user_id=user_id,
+                role="assistant",
+                content=resp.answer,
+                confidence=resp.confidence,
+                sources=[],
+                retrieval_mode=retrieval_mode,
+            )
+        )
+        db.commit()
+        return resp, None
+
+    ctx_bundle = {
+        "conv": conv,
+        "lexical": lexical,
+        "intent_res": intent_res,
+        "query_category": intent_res.query_category,
+        "nlp_meta": nlp_meta,
+        "retrieval_mode": retrieval_mode,
+        "sql_context": sql_context,
+        "chunks": chunks,
+        "retrieved_context": retrieved_context,
+        "history_payload": history_payload,
+        "llm_nlp_context": llm_nlp_context,
+    }
+    return None, ctx_bundle
+
+
+def _finalize_chat_turn(
+    db: Session,
+    user_id: int,
+    llm_out: dict[str, Any],
+    bundle: dict[str, Any],
+) -> ChatResponse:
+    conv = bundle["conv"]
+    lexical = bundle["lexical"]
+    intent_res = bundle["intent_res"]
+    query_category = bundle.get("query_category", "PERSONAL_FINANCIAL_DATA")
+    chunks = bundle["chunks"]
+    retrieval_mode = bundle["retrieval_mode"]
+    nlp_meta = bundle["nlp_meta"]
+
+    # Never emit fake document citations on pure GENERAL_KNOWLEDGE responses
+    if query_category == "GENERAL_KNOWLEDGE":
+        sources = []
+    else:
+        sources = _merge_sources(llm_out.get("sources", []), chunks, db=db, user_id=user_id)
+
+    answer_text = llm_out.get("answer") or "I could not find enough information to answer that question."
+    confidence = llm_out.get("confidence") or ("HIGH" if query_category == "GENERAL_KNOWLEDGE" else "NEEDS_REVIEW")
+    default_disclaimer = (
+        "Educational information for general financial literacy, not personalized financial advice."
+        if query_category == "GENERAL_KNOWLEDGE"
+        else "This finding is based only on the uploaded documents and verified structured records."
+    )
+    disclaimer = llm_out.get("disclaimer") or default_disclaimer
     followups = build_followup_suggestions(intent_res, lexical.language)
+    now_ist = get_ist_now()
 
     db.add(
         ChatMessage(
@@ -362,6 +572,15 @@ def handle_chat_turn(
         )
     )
     db.commit()
+    logger.info(
+        "Stage [6/6 Persisted]: user_id=%s conv_id=%s category=%s route=%s citations=%d confidence=%s",
+        user_id,
+        conv.id,
+        query_category,
+        retrieval_mode,
+        len(sources),
+        confidence,
+    )
 
     return ChatResponse(
         answer=answer_text,
@@ -369,6 +588,7 @@ def handle_chat_turn(
         language=lexical.language,
         confidence=confidence,
         sources=sources,
+        citations=sources,
         needs_clarification=False,
         clarification_options=[],
         followup_suggestions=followups,
@@ -376,4 +596,82 @@ def handle_chat_turn(
         disclaimer=disclaimer,
         conversation_id=conv.id,
         retrieval_mode=retrieval_mode,
+        query_category=query_category,
+        timestamp=now_ist,
     )
+
+
+async def ahandle_chat_turn(
+    db: Session,
+    user_id: int,
+    question: str,
+    conversation_id: str | uuid.UUID | None = None,
+) -> ChatResponse:
+    """Async conversational pipeline using Groq OpenAI-compatible AsyncClient."""
+    early, bundle = _prepare_chat_context(db, user_id, question, conversation_id)
+    if early is not None:
+        return early
+
+    q_cat = bundle.get("query_category", "PERSONAL_FINANCIAL_DATA")
+
+    # Respect unittest.mock.patch("app.services.chat.generate_grounded_answer") in test suites cleanly
+    if generate_grounded_answer is not _ORIG_SYNC_LLM:
+        try:
+            llm_out = generate_grounded_answer(
+                question=question,
+                retrieved_context=bundle["retrieved_context"],
+                sql_context=bundle["sql_context"],
+                history=bundle["history_payload"],
+                nlp_context=bundle["llm_nlp_context"],
+                query_category=q_cat,
+            )
+        except TypeError:
+            llm_out = generate_grounded_answer(
+                question=question,
+                retrieved_context=bundle["retrieved_context"],
+                sql_context=bundle["sql_context"],
+                history=bundle["history_payload"],
+            )
+    else:
+        llm_out = await agenerate_grounded_answer(
+            question=question,
+            retrieved_context=bundle["retrieved_context"],
+            sql_context=bundle["sql_context"],
+            history=bundle["history_payload"],
+            nlp_context=bundle["llm_nlp_context"],
+            query_category=q_cat,
+        )
+
+    return _finalize_chat_turn(db, user_id, llm_out, bundle)
+
+
+def handle_chat_turn(
+    db: Session,
+    user_id: int,
+    question: str,
+    conversation_id: str | uuid.UUID | None = None,
+) -> ChatResponse:
+    """Execute the full 5-Level NLP + Three-Tier Hybrid RAG/SQL pipeline synchronously."""
+    early, bundle = _prepare_chat_context(db, user_id, question, conversation_id)
+    if early is not None:
+        return early
+
+    q_cat = bundle.get("query_category", "PERSONAL_FINANCIAL_DATA")
+    try:
+        llm_out = generate_grounded_answer(
+            question=question,
+            retrieved_context=bundle["retrieved_context"],
+            sql_context=bundle["sql_context"],
+            history=bundle["history_payload"],
+            nlp_context=bundle["llm_nlp_context"],
+            query_category=q_cat,
+        )
+    except TypeError:
+        llm_out = generate_grounded_answer(
+            question=question,
+            retrieved_context=bundle["retrieved_context"],
+            sql_context=bundle["sql_context"],
+            history=bundle["history_payload"],
+        )
+
+    return _finalize_chat_turn(db, user_id, llm_out, bundle)

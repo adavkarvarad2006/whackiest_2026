@@ -3,21 +3,26 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
+  Check,
   CheckCircle2,
   ChevronDown,
+  Copy,
   Download,
   FileText,
   History,
   Loader2,
   MessageSquare,
   Plus,
+  RotateCcw,
   Search,
   Send,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Square,
   Trash2,
 } from "lucide-react";
+import { AssistantMarkdown } from "@/components/AssistantMarkdown";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PdfViewerModal } from "@/components/PdfViewerModal";
 import { api } from "@/lib/api";
@@ -25,10 +30,10 @@ import { formatISTWithTz } from "@/lib/dateUtils";
 import { ChatConfidence, ChatConversation, ChatMessage, ChatSource } from "@/lib/types";
 
 const DEFAULT_SUGGESTED_QUESTIONS = [
+  "What is an FD?",
+  "Difference between FD and RD?",
+  "Is my FD interest rate good?",
   "Which policies don't have nominees?",
-  "Where is my money getting deducted every month?",
-  "AIS aur Form 16 mein koi mismatch hai kya?",
-  "Am I financially prepared?",
 ];
 
 function createConversationId(): string {
@@ -68,10 +73,15 @@ export default function AskArthaLensPage() {
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>(DEFAULT_SUGGESTED_QUESTIONS);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
+  const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
+  const [lastQuestion, setLastQuestion] = useState<string>("");
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [historySearch, setHistorySearch] = useState("");
   const [chatError, setChatError] = useState("");
   const [confirmDeleteConv, setConfirmDeleteConv] = useState<ChatConversation | null>(null);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+  const [clearingAll, setClearingAll] = useState(false);
   const [deletingConv, setDeletingConv] = useState(false);
   const [activePdf, setActivePdf] = useState<{
     documentId: string | number | null | undefined;
@@ -84,6 +94,7 @@ export default function AskArthaLensPage() {
   const [exportNotice, setExportNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const exportMenuRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!exportOpen) return;
@@ -236,6 +247,37 @@ export default function AskArthaLensPage() {
     setMessages(conv.messages);
   };
 
+  const handleStopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  };
+
+  const handleClearAllHistory = async () => {
+    if (clearingAll) return;
+    setClearingAll(true);
+    setChatError("");
+    try {
+      await api.clearChatHistory();
+      setConversations([]);
+      setMessages([]);
+      setActiveId(createConversationId());
+      setConfirmClearAll(false);
+    } catch (err: unknown) {
+      setChatError(err instanceof Error ? err.message : "Failed to clear chat history.");
+    } finally {
+      setClearingAll(false);
+    }
+  };
+
+  const handleCopyResponse = (msgId: string, content: string) => {
+    if (!content) return;
+    navigator.clipboard.writeText(content);
+    setCopiedMsgId(msgId);
+    setTimeout(() => setCopiedMsgId((curr) => (curr === msgId ? null : curr)), 2000);
+  };
+
   const handleSend = async (questionText?: string) => {
     const question = (questionText ?? input).trim();
     if (!question || sending) return;
@@ -252,11 +294,20 @@ export default function AskArthaLensPage() {
 
     setMessages((prev) => [...prev, userMsg]);
     if (!questionText) setInput("");
+    setLastQuestion(question);
     setChatError("");
+    setStreamingText("");
     setSending(true);
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
-      const res = await api.sendChatMessage(question, conversationId);
+      const res = await api.streamChatMessage(question, conversationId, {
+        signal: controller.signal,
+        onToken: (_tok, partial) => setStreamingText(partial),
+      });
+      const resolvedSources = res.citations && res.citations.length > 0 ? res.citations : res.sources;
       const assistantMsg: ChatMessage = {
         id: `local_a_${Date.now()}`,
         role: "assistant",
@@ -264,22 +315,30 @@ export default function AskArthaLensPage() {
         intent: res.intent,
         language: res.language,
         confidence: res.confidence,
-        sources: res.sources,
+        sources: resolvedSources,
         needs_clarification: res.needs_clarification,
         clarification_options: res.clarification_options,
         followup_suggestions: res.followup_suggestions,
-        created_at: new Date().toISOString(),
+        retrieval_mode: res.retrieval_mode,
+        query_category: res.query_category,
+        created_at: res.timestamp || new Date().toISOString(),
         is_mock: res.is_mock,
       };
       setMessages((prev) => [...prev, assistantMsg]);
       await loadHistory();
     } catch (err: unknown) {
-      setChatError(
-        err instanceof Error
-          ? err.message
-          : "Unable to get a response from Ask ArthaLens right now."
-      );
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setChatError("Generation stopped by user.");
+      } else {
+        setChatError(
+          err instanceof Error
+            ? err.message
+            : "Unable to get a response from Ask ArthaLens right now."
+        );
+      }
     } finally {
+      abortControllerRef.current = null;
+      setStreamingText("");
       setSending(false);
     }
   };
@@ -292,19 +351,31 @@ export default function AskArthaLensPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Chat History Sidebar */}
         <div className="lg:col-span-4 xl:col-span-3 rounded-3xl border border-[#E8E8E8] bg-white p-5 flex flex-col gap-4 h-fit lg:sticky lg:top-24">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#777777]">
               <History className="h-3.5 w-3.5" />
               Chat History
             </div>
-            <button
-              type="button"
-              onClick={startNewChat}
-              className="inline-flex items-center gap-1 rounded-full bg-[#090909] px-3 py-1.5 text-[11px] font-medium text-white hover:bg-[#222222] transition-colors"
-            >
-              <Plus className="h-3 w-3" />
-              New Chat
-            </button>
+            <div className="flex items-center gap-1.5">
+              {conversations.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmClearAll(true)}
+                  className="rounded-full border border-[#E8E8E8] bg-white px-2.5 py-1.5 text-[11px] font-medium text-[#777777] hover:border-red-300 hover:text-red-600 transition-colors"
+                  title="Clear all chat history"
+                >
+                  Clear
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={startNewChat}
+                className="inline-flex items-center gap-1 rounded-full bg-[#090909] px-3 py-1.5 text-[11px] font-medium text-white hover:bg-[#222222] transition-colors"
+              >
+                <Plus className="h-3 w-3" />
+                New Chat
+              </button>
+            </div>
           </div>
 
           {conversations.length > 0 && (
@@ -490,10 +561,14 @@ export default function AskArthaLensPage() {
                 </div>
               </div>
             ) : (
-              messages.map((msg) => {
+              messages.map((msg, msgIdx) => {
                 const isUser = msg.role === "user";
                 const badge = !isUser ? confidenceBadge(msg.confidence) : null;
                 const BadgeIcon = badge?.Icon;
+                const prevUserQuestion =
+                  !isUser
+                    ? [...messages.slice(0, msgIdx)].reverse().find((m) => m.role === "user")?.content
+                    : undefined;
 
                 return (
                   <div
@@ -507,7 +582,11 @@ export default function AskArthaLensPage() {
                           : "bg-[#F7F7F7] text-[#111111] border border-[#E8E8E8]"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                      {isUser ? (
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      ) : (
+                        <AssistantMarkdown content={msg.content} />
+                      )}
                       <p
                         className={`mt-1.5 text-[10px] ${
                           isUser ? "text-white/55 text-right" : "text-[#888888]"
@@ -544,6 +623,18 @@ export default function AskArthaLensPage() {
                             );
                           })}
 
+                          {msg.retrieval_mode === "GENERAL_LLM" && (
+                            <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555555]">
+                              General Knowledge
+                            </span>
+                          )}
+
+                          {msg.retrieval_mode === "HYBRID_REASONING" && (
+                            <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555555]">
+                              Hybrid Analysis
+                            </span>
+                          )}
+
                           {msg.language && (
                             <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] text-[#777777]">
                               {msg.language}
@@ -561,6 +652,29 @@ export default function AskArthaLensPage() {
                               Dev Preview
                             </span>
                           )}
+
+                          <div className="ml-auto flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleCopyResponse(msg.id, msg.content)}
+                              className="inline-flex items-center gap-1 rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555555] hover:border-[#090909] hover:text-[#111111]"
+                              title="Copy response"
+                            >
+                              {copiedMsgId === msg.id ? <Check className="h-2.5 w-2.5" /> : <Copy className="h-2.5 w-2.5" />}
+                              {copiedMsgId === msg.id ? "Copied" : "Copy"}
+                            </button>
+                            {prevUserQuestion && !sending && (
+                              <button
+                                type="button"
+                                onClick={() => handleSend(prevUserQuestion)}
+                                className="inline-flex items-center gap-1 rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555555] hover:border-[#090909] hover:text-[#111111]"
+                                title="Retry response"
+                              >
+                                <RotateCcw className="h-2.5 w-2.5" />
+                                Retry
+                              </button>
+                            )}
+                          </div>
                         </div>
                       )}
 
@@ -601,12 +715,35 @@ export default function AskArthaLensPage() {
 
             {sending && (
               <div className="flex justify-start">
-                <div className="rounded-3xl border border-[#E8E8E8] bg-[#F7F7F7] px-5 py-3.5 text-xs text-[#777777] flex items-center gap-2">
-                  <MessageSquare className="h-3.5 w-3.5 animate-pulse" />
-                  Searching financial documents...
+                <div className="max-w-2xl rounded-3xl border border-[#E8E8E8] bg-[#F7F7F7] px-5 py-3.5 text-sm text-[#111111] space-y-2">
+                  {streamingText ? (
+                    <AssistantMarkdown content={streamingText} />
+                  ) : null}
+                  <div className="text-xs text-[#777777] flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#111111]" />
+                    <span>{streamingText ? "Streaming grounded answer..." : "ArthaLens is thinking..."}</span>
+                  </div>
                 </div>
               </div>
             )}
+            {!sending &&
+              messages.length > 0 &&
+              messages[messages.length - 1]?.role === "user" &&
+              !chatError && (
+                <div className="flex justify-start">
+                  <div className="max-w-2xl rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-xs text-amber-900 flex items-center justify-between gap-3">
+                    <span>No assistant response was saved for this turn.</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSend(messages[messages.length - 1].content)}
+                      className="inline-flex items-center gap-1 rounded-full bg-[#090909] px-3 py-1 text-[11px] font-medium text-white hover:bg-neutral-800 shrink-0"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      Retry
+                    </button>
+                  </div>
+                </div>
+              )}
             <div ref={bottomRef} />
           </div>
 
@@ -617,13 +754,25 @@ export default function AskArthaLensPage() {
                 <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                 {chatError}
               </span>
-              <button
-                type="button"
-                onClick={() => setChatError("")}
-                className="text-[11px] font-medium underline"
-              >
-                Dismiss
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                {lastQuestion && !sending && (
+                  <button
+                    type="button"
+                    onClick={() => handleSend(lastQuestion)}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold underline"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Retry
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setChatError("")}
+                  className="text-[11px] font-medium underline"
+                >
+                  Dismiss
+                </button>
+              </div>
             </div>
           )}
           <form
@@ -640,14 +789,26 @@ export default function AskArthaLensPage() {
               placeholder="Ask in English or Hinglish (e.g., Mera FD kab mature hoga?)..."
               className="flex-1 rounded-2xl border border-[#E8E8E8] bg-[#F7F7F7] px-4 py-3 text-sm text-[#111111] placeholder:text-[#888888] focus:border-[#090909] focus:bg-white focus:outline-none"
             />
-            <button
-              type="submit"
-              disabled={!input.trim() || sending}
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#090909] px-5 py-3 text-sm font-medium text-white hover:bg-[#222222] disabled:opacity-40 transition-colors"
-            >
-              <Send className="h-4 w-4" />
-              <span className="hidden sm:inline">Ask</span>
-            </button>
+            {sending ? (
+              <button
+                type="button"
+                onClick={handleStopGeneration}
+                className="inline-flex items-center gap-2 rounded-2xl border border-[#090909] bg-white px-5 py-3 text-sm font-medium text-[#111111] hover:bg-[#F7F7F7] transition-colors"
+                title="Stop generation"
+              >
+                <Square className="h-3.5 w-3.5 fill-current" />
+                <span className="hidden sm:inline">Stop</span>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={!input.trim()}
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#090909] px-5 py-3 text-sm font-medium text-white hover:bg-[#222222] disabled:opacity-40 transition-colors"
+              >
+                <Send className="h-4 w-4" />
+                <span className="hidden sm:inline">Ask</span>
+              </button>
+            )}
           </form>
         </div>
       </div>
@@ -685,6 +846,36 @@ export default function AskArthaLensPage() {
                 className="rounded-full bg-red-600 px-5 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {deletingConv ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmClearAll && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-3xl border border-[#E8E8E8] bg-white p-6 shadow-2xl space-y-4">
+            <h3 className="text-base font-semibold text-[#111111]">
+              Clear All Chat History?
+            </h3>
+            <p className="text-xs text-[#777777] leading-relaxed">
+              This will permanently delete all {conversations.length} saved conversation(s) for your account.
+            </p>
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmClearAll(false)}
+                className="rounded-full border border-[#E8E8E8] px-4 py-2 text-xs font-medium text-[#777777] hover:text-[#111111]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={clearingAll}
+                onClick={handleClearAllHistory}
+                className="rounded-full bg-red-600 px-5 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {clearingAll ? "Clearing..." : "Clear History"}
               </button>
             </div>
           </div>

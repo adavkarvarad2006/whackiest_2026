@@ -6,9 +6,9 @@ from datetime import date, datetime
 from typing import Annotated, Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, PlainSerializer
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, PlainSerializer, model_validator
 
-from app.timezone_utils import to_ist_iso
+from app.timezone_utils import get_ist_now, to_ist_iso
 
 ISTDatetime = Annotated[datetime, PlainSerializer(lambda dt: to_ist_iso(dt), return_type=str)]
 
@@ -127,8 +127,19 @@ class EvidenceSource(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    question: str = Field(min_length=1, max_length=2000)
+    question: Optional[str] = Field(default=None, max_length=2000)
+    message: Optional[str] = Field(default=None, max_length=2000)
     conversation_id: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_non_empty_prompt(self) -> "ChatRequest":
+        text = (self.question if self.question is not None else self.message) or ""
+        cleaned = text.strip()
+        if not cleaned:
+            raise ValueError("Either 'question' or 'message' must be a non-empty string.")
+        self.question = cleaned
+        self.message = cleaned
+        return self
 
 
 class ChatResponse(BaseModel):
@@ -137,6 +148,7 @@ class ChatResponse(BaseModel):
     language: str = "English"
     confidence: str
     sources: list[EvidenceSource] = Field(default_factory=list)
+    citations: list[EvidenceSource] = Field(default_factory=list)
     needs_clarification: bool = False
     clarification_options: list[str] = Field(default_factory=list)
     followup_suggestions: list[str] = Field(default_factory=list)
@@ -144,6 +156,8 @@ class ChatResponse(BaseModel):
     disclaimer: str = "This finding is based only on the uploaded documents and verified structured records."
     conversation_id: UUID
     retrieval_mode: str = "HYBRID"
+    query_category: str = "PERSONAL_FINANCIAL_DATA"
+    timestamp: ISTDatetime = Field(default_factory=get_ist_now)
 
 
 class ChatMessageOut(BaseModel):

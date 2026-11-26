@@ -12,7 +12,7 @@ from app.auth import get_current_user
 from app.database import get_db
 from app.models import ChatMessage, Conversation, Document, User
 from app.schemas import ChatHistoryOut, ChatMessageOut, ChatRequest, ChatResponse, ConversationSummaryOut
-from app.services.chat import handle_chat_turn, normalize_conversation_id
+from app.services.chat import ahandle_chat_turn, handle_chat_turn, normalize_conversation_id
 from app.services.chat_export import (
     build_json_export,
     build_pdf_export,
@@ -25,30 +25,30 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 
 
 @router.post("", response_model=ChatResponse)
-def chat_endpoint(
+async def chat_endpoint(
     payload: ChatRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return handle_chat_turn(
+    return await ahandle_chat_turn(
         db=db,
         user_id=current_user.id,
-        question=payload.question.strip(),
+        question=payload.question or payload.message or "",
         conversation_id=payload.conversation_id,
     )
 
 
 @router.post("/stream")
-def chat_stream_endpoint(
+async def chat_stream_endpoint(
     payload: ChatRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """SSE endpoint returning grounded response events incrementally for UI streaming."""
-    resp = handle_chat_turn(
+    """SSE endpoint returning grounded response tokens incrementally for UI streaming."""
+    resp = await ahandle_chat_turn(
         db=db,
         user_id=current_user.id,
-        question=payload.question.strip(),
+        question=payload.question or payload.message or "",
         conversation_id=payload.conversation_id,
     )
 
@@ -93,11 +93,13 @@ def get_suggested_questions(
 
     if len(suggestions) < 4:
         suggestions = [
-            "Do I have any missing nominees?",
-            "Where is my money getting deducted every month?",
-            "AIS aur Form 16 mein koi mismatch hai kya?",
-            "Am I financially prepared?",
+            "What is an FD?",
+            "Difference between FD and RD?",
+            "Explain SIP with an example.",
+            "FD kya hota hai?",
         ]
+    elif "Is my FD interest rate good?" not in suggestions and len(suggestions) < 6:
+        suggestions.append("Is my FD interest rate good?")
     return {"suggestions": suggestions[:6]}
 
 
@@ -150,6 +152,7 @@ def get_all_chat_history(
                     "content": m.content,
                     "confidence": m.confidence,
                     "sources": m.sources,
+                    "retrieval_mode": m.retrieval_mode,
                     "created_at": to_ist_iso(m.created_at),
                 }
                 for m in msgs
@@ -320,3 +323,17 @@ def delete_conversation(
     db.delete(conv)
     db.commit()
     return {"deleted": True, "conversation_id": str(cid_uuid)}
+
+
+@router.delete("/history")
+def clear_all_conversations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Clear all conversations and messages belonging strictly to the authenticated user."""
+    convs = list(db.scalars(select(Conversation).where(Conversation.user_id == current_user.id)))
+    count = len(convs)
+    for c in convs:
+        db.delete(c)
+    db.commit()
+    return {"cleared": True, "deleted_count": count}

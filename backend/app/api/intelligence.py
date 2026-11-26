@@ -11,9 +11,10 @@ from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import Document, FinancialAsset, Finding, FindingProgress, Transaction, User
+from app.models import AutomationTask, Document, FinancialAsset, Finding, FindingProgress, Transaction, User
 from app.schemas import FinancialAssetOut, FindingOut, TransactionOut
 from app.services import sql_analytics
+from app.services.automation import get_or_create_automation_task, submit_and_verify_evidence
 from app.timezone_utils import get_ist_now, get_utc_now, to_ist_iso
 
 router = APIRouter(prefix="/api", tags=["intelligence"])
@@ -73,7 +74,13 @@ def _recommended_steps_for_finding(finding_type: str) -> list[str]:
     ]
 
 
-def _ui_finding(f: Finding, user_id: int, is_demo: bool, progress: FindingProgress | None = None) -> dict:
+def _ui_finding(
+    f: Finding,
+    user_id: int,
+    is_demo: bool,
+    progress: FindingProgress | None = None,
+    task: AutomationTask | None = None,
+) -> dict:
     sev_map = {"RED": "High", "AMBER": "Medium", "INFO": "Low", "GREEN": "Low"}
     status_map = {
         "RESOLVED": "Resolved",
@@ -85,7 +92,12 @@ def _ui_finding(f: Finding, user_id: int, is_demo: bool, progress: FindingProgre
     ev_list = f.evidence if isinstance(f.evidence, list) else []
     first_ev = ev_list[0] if ev_list and isinstance(ev_list[0], dict) else {}
     second_ev = ev_list[1] if len(ev_list) > 1 and isinstance(ev_list[1], dict) else {}
-    steps = _recommended_steps_for_finding(f.finding_type)
+    steps = (
+        [s["label"] for s in (task.generated_plan or {}).get("steps", []) if isinstance(s, dict) and s.get("label")]
+        if task and isinstance(task.generated_plan, dict) and (task.generated_plan or {}).get("steps")
+        else _recommended_steps_for_finding(f.finding_type)
+    )
+    impact_val = float(task.estimated_impact_inr) if task and task.estimated_impact_inr is not None else None
     return {
         "id": str(f.id),
         "user_id": str(user_id),
@@ -99,7 +111,7 @@ def _ui_finding(f: Finding, user_id: int, is_demo: bool, progress: FindingProgre
         "raw_confidence": f.confidence,
         "status": status_map.get(f.status, "Open"),
         "is_demo": is_demo,
-        "impact_amount": None,
+        "impact_amount": impact_val,
         "evidence": {
             "source_document": first_ev.get("document", "Uploaded Document"),
             "source_document_id": str(first_ev.get("document_id", "")),
@@ -115,12 +127,29 @@ def _ui_finding(f: Finding, user_id: int, is_demo: bool, progress: FindingProgre
         },
         "evidence_items": ev_list,
         "recommended_steps": steps if isinstance(steps, list) else [],
-        "completed_steps": list(progress.completed_steps) if progress and isinstance(progress.completed_steps, list) else [],
-        "resolution_evidence": progress.verification_evidence if progress else None,
+        "completed_steps": (
+            list(task.completed_steps)
+            if task and isinstance(task.completed_steps, list) and task.completed_steps
+            else (list(progress.completed_steps) if progress and isinstance(progress.completed_steps, list) else [])
+        ),
+        "draft_email": task.draft_email if task else None,
+        "resolution_evidence": (task.last_verification_summary if task and task.last_verification_summary else None) or (progress.verification_evidence if progress else None),
         "feedback_wrong": f.status == "DISMISSED",
         "feedback_note": progress.feedback_note if progress else None,
         "resolved_at": to_ist_iso(progress.resolved_at) if progress and progress.resolved_at else None,
         "created_at": to_ist_iso(f.created_at) if f.created_at else None,
+        "automation": {
+            "workflow_type": task.workflow_type,
+            "automation_level": task.automation_level,
+            "task_status": task.task_status,
+            "required_approval": task.required_approval,
+            "approval_granted": task.approval_granted,
+            "institution_name": task.institution_name,
+            "account_or_policy_ref": task.account_or_policy_ref,
+            "estimated_impact_inr": impact_val,
+        }
+        if task
+        else None,
     }
 
 
@@ -203,6 +232,10 @@ def get_dashboard(
         p.finding_id: p
         for p in db.scalars(select(FindingProgress).where(FindingProgress.user_id == current_user.id))
     }
+    task_map = {
+        f.id: get_or_create_automation_task(db, current_user, f)
+        for f in findings
+    }
 
     return {
         "total_assets_mapped": round(total_mapped, 2),
@@ -214,7 +247,7 @@ def get_dashboard(
         "nominee_counts": counts,
         "trends": trends,
         "nominee_tiles": tiles,
-        "recent_findings": [_ui_finding(f, current_user.id, is_demo, prog_map.get(f.id)) for f in findings],
+        "recent_findings": [_ui_finding(f, current_user.id, is_demo, prog_map.get(f.id), task_map.get(f.id)) for f in findings],
         "has_demo_data": is_demo or len(assets) > 0,
         "server_time_ist": get_ist_now().isoformat(),
     }
@@ -279,7 +312,12 @@ def get_findings(
         p.finding_id: p
         for p in db.scalars(select(FindingProgress).where(FindingProgress.user_id == current_user.id))
     }
-    return [_ui_finding(f, current_user.id, is_demo, prog_map.get(f.id)) for f in db.scalars(stmt)]
+    rows = list(db.scalars(stmt))
+    task_map = {
+        f.id: get_or_create_automation_task(db, current_user, f)
+        for f in rows
+    }
+    return [_ui_finding(f, current_user.id, is_demo, prog_map.get(f.id), task_map.get(f.id)) for f in rows]
 
 
 @router.post("/findings/{finding_id}/feedback")
@@ -340,19 +378,30 @@ def resolve_finding(
     f = db.scalar(select(Finding).where(Finding.id == finding_id, Finding.user_id == current_user.id))
     if f is None:
         raise HTTPException(status_code=404, detail="Finding not found.")
-    f.status = "RESOLVED"
+
+    task, ev = submit_and_verify_evidence(
+        db,
+        current_user,
+        f,
+        evidence_type="Confirmation Details",
+        confirmation_text=payload.verification_evidence.strip(),
+        nominee_name=payload.nominee_name.strip() if payload.nominee_name else None,
+    )
+    if ev.verification_status != "VERIFIED":
+        raise HTTPException(status_code=400, detail=ev.verification_explanation)
+
     prog = _upsert_finding_progress(
         db,
         f.id,
         current_user.id,
-        completed_steps=payload.completed_steps,
-        verification_evidence=payload.verification_evidence.strip() or None,
+        completed_steps=payload.completed_steps or list(task.completed_steps or []),
+        verification_evidence=ev.verification_explanation,
         nominee_name=payload.nominee_name.strip() if payload.nominee_name else None,
         resolved=True,
     )
     db.commit()
     db.refresh(f)
-    return _ui_finding(f, current_user.id, current_user.email.endswith(".demo@arthalens.example"), prog)
+    return _ui_finding(f, current_user.id, current_user.email.endswith(".demo@arthalens.example"), prog, task)
 
 
 @router.get("/assets", response_model=list[FinancialAssetOut])

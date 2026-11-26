@@ -11,6 +11,7 @@ from typing import Any
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     JSON,
+    Boolean,
     Date,
     DateTime,
     ForeignKey,
@@ -297,4 +298,113 @@ class FindingProgress(Base):
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), default=get_utc_now, onupdate=get_utc_now, nullable=False
+    )
+
+
+class AutomationTask(Base):
+    """AI-classified action workflow state for a financial finding."""
+
+    __tablename__ = "automation_tasks"
+    __table_args__ = (
+        UniqueConstraint("finding_id", "user_id", name="uq_automation_task_finding_user"),
+        Index("ix_automation_tasks_user_status", "user_id", "task_status"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    finding_id: Mapped[int] = mapped_column(ForeignKey("findings.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    workflow_type: Mapped[str] = mapped_column(String(60), nullable=False)
+    automation_level: Mapped[str] = mapped_column(String(50), nullable=False)
+    task_status: Mapped[str] = mapped_column(String(50), nullable=False, default="Not Started")
+    required_approval: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    approval_granted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    issue_summary: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    required_action: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    external_institution_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    institution_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    account_or_policy_ref: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    expected_evidence: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    estimated_impact_inr: Mapped[Decimal | None] = mapped_column(Numeric(15, 2), nullable=True)
+    generated_plan: Mapped[dict[str, Any]] = mapped_column(JSONBType(), nullable=False, default=dict)
+    completed_steps: Mapped[list[str]] = mapped_column(JSONBType(), nullable=False, default=list)
+    draft_email: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_generated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    last_verification_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, onupdate=get_utc_now, nullable=False
+    )
+
+
+class ActionEvidence(Base):
+    """Uploaded or submitted confirmation evidence attached to an automation task."""
+
+    __tablename__ = "action_evidence"
+    __table_args__ = (
+        Index("ix_action_evidence_task_user", "task_id", "user_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    task_id: Mapped[int] = mapped_column(ForeignKey("automation_tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    finding_id: Mapped[int] = mapped_column(ForeignKey("findings.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    evidence_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    file_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    raw_text: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    extracted_data: Mapped[dict[str, Any]] = mapped_column(JSONBType(), nullable=False, default=dict)
+    verification_status: Mapped[str] = mapped_column(String(40), nullable=False, default="NEEDS_REVIEW")
+    verification_explanation: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    uploaded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
+    )
+
+
+class ActionAuditLog(Base):
+    """Immutable audit log of every automation action, approval, block, and status transition."""
+
+    __tablename__ = "action_audit_logs"
+    __table_args__ = (
+        Index("ix_action_audit_finding_user", "finding_id", "user_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    task_id: Mapped[int | None] = mapped_column(ForeignKey("automation_tasks.id", ondelete="CASCADE"), nullable=True, index=True)
+    finding_id: Mapped[int] = mapped_column(ForeignKey("findings.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    action: Mapped[str] = mapped_column(String(80), nullable=False)
+    actor: Mapped[str] = mapped_column(String(40), nullable=False, default="SYSTEM")
+    previous_status: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    new_status: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    details: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONBType(), nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
+    )
+
+
+class FinancialReminder(Base):
+    """Scheduled automated financial reminders (e.g. FD maturity countdowns)."""
+
+    __tablename__ = "financial_reminders"
+    __table_args__ = (
+        UniqueConstraint("task_id", "reminder_type", name="uq_reminder_task_type"),
+        Index("ix_financial_reminders_user", "user_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    finding_id: Mapped[int] = mapped_column(ForeignKey("findings.id", ondelete="CASCADE"), nullable=False, index=True)
+    task_id: Mapped[int] = mapped_column(ForeignKey("automation_tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    reminder_type: Mapped[str] = mapped_column(String(60), nullable=False, default="FD_MATURITY")
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    days_remaining: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    status: Mapped[str] = mapped_column(String(40), nullable=False, default="SCHEDULED")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
     )

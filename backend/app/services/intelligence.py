@@ -341,6 +341,32 @@ def recompute_user_findings(db: Session, user_id: int) -> list[Finding]:
     # ------------------------------------------------------------------
     loans = [a for a in assets if a.asset_type == "PERSONAL_LOAN"]
     emi_txns = [tx for tx in txns if tx.category == "LOAN_EMI"]
+    if emi_txns and not loans:
+        sample_emi = emi_txns[0]
+        emi_amt = float(sample_emi.amount)
+        new_findings.append(
+            Finding(
+                user_id=user_id,
+                finding_type="GAP_MISSING_LOAN_STATEMENT",
+                title="Loan EMI Debits Detected Without Loan Statement",
+                description=(
+                    f"Detected {len(emi_txns)} recurring Loan EMI debit(s) of ₹{emi_amt:,.2f} "
+                    f"({sample_emi.description}) in {doc_name(sample_emi.document_id)}, "
+                    "but no Personal Loan Statement has been uploaded to verify interest rate, remaining tenure, or principal."
+                ),
+                severity="AMBER",
+                confidence="NEEDS_VERIFICATION",
+                evidence=[
+                    {
+                        "document_id": sample_emi.document_id,
+                        "document": doc_name(sample_emi.document_id),
+                        "page": sample_emi.page_number,
+                        "extracted_text": f"EMI debit: {sample_emi.description} ₹{emi_amt:,.2f} ({sample_emi.transaction_date.isoformat()})",
+                    }
+                ],
+                status="OPEN",
+            )
+        )
     for loan in loans:
         expected_emi = float((loan.details or {}).get("monthly_emi", 0.0))
         if emi_txns and expected_emi > 0:
