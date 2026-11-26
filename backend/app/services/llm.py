@@ -38,8 +38,9 @@ Your responsibilities:
 
 Always prioritize accuracy, transparency and evidence.
 
-Language & Output Rules:
+Language & Timezone Rules:
 - Reply in the user's detected language (English or Hinglish) while keeping exact numbers (₹), dates, document filenames, and masked account references accurate.
+- All dates, timestamps, and relative date references ('today', 'yesterday', 'this month', 'last week') MUST be interpreted and displayed in Indian Standard Time (IST / Asia/Kolkata, UTC+05:30) using the provided IST context.
 - Respond ONLY with a valid JSON object matching this exact schema:
 {
   "answer": "Clear, evidence-backed answer in the user's language citing exact document names and page numbers.",

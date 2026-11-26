@@ -24,6 +24,7 @@ from app.services.nlp.query_expansion import (
 from app.services.nlp.syntactic import analyze_syntax
 from app.services.retrieval import RetrievedChunk, retrieve_multi_query_chunks
 from app.services.router_classifier import gather_sql_context_for_intent
+from app.timezone_utils import format_ist_display, get_ist_now
 
 
 def normalize_conversation_id(user_id: int, raw_id: str | uuid.UUID) -> uuid.UUID:
@@ -199,8 +200,11 @@ def handle_chat_turn(
     )
     db.commit()
 
+    now_ist = get_ist_now()
     nlp_meta = {
         "language": lexical.language,
+        "timezone": "Asia/Kolkata",
+        "current_ist_time": format_ist_display(now_ist),
         "normalized_query": lexical.normalized_text,
         "expanded_abbreviations": lexical.expanded_abbreviations,
         "spell_corrections": lexical.spell_corrections,
@@ -208,6 +212,7 @@ def handle_chat_turn(
         "has_negation": syntax.has_negation,
         "is_comparison": syntax.is_comparison,
         "relation": syntax.relation,
+        "temporal_windows": syntax.temporal_windows,
         "intent": intent_res.intent,
         "intent_confidence": intent_res.confidence,
         "pragmatic_type": intent_res.pragmatic_type,
@@ -307,6 +312,10 @@ def handle_chat_turn(
     history_payload = [{"role": m.role, "content": m.content} for m in history_msgs]
     llm_nlp_context = {
         "language": lexical.language,
+        "timezone": "Asia/Kolkata (IST, UTC+05:30)",
+        "current_date_ist": now_ist.date().isoformat(),
+        "current_datetime_ist": format_ist_display(now_ist, long_month=True),
+        "temporal_windows": syntax.temporal_windows,
         "intent": intent_res.intent,
         "pragmatic_type": intent_res.pragmatic_type,
         "question_type": syntax.question_type,

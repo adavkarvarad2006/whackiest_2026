@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.models import Document, FinancialAsset, Finding, Transaction
+from app.timezone_utils import get_ist_today
 
 
 def get_reference_date() -> date:
@@ -21,7 +22,7 @@ def get_reference_date() -> date:
             return datetime.strptime(settings.arthalens_reference_date.strip(), "%Y-%m-%d").date()
         except ValueError:
             pass
-    return date.today()
+    return get_ist_today()
 
 
 def _normalize_merchant(desc: str) -> str:

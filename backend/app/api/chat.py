@@ -19,6 +19,7 @@ from app.services.chat_export import (
     build_txt_export,
     sanitize_filename_part,
 )
+from app.timezone_utils import to_ist_iso
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
@@ -140,7 +141,8 @@ def get_all_chat_history(
         results.append({
             "conversation_id": str(c.id),
             "title": c.title,
-            "updated_at": c.updated_at.isoformat(),
+            "created_at": to_ist_iso(c.created_at),
+            "updated_at": to_ist_iso(c.updated_at),
             "messages": [
                 {
                     "id": str(m.id),
@@ -148,7 +150,7 @@ def get_all_chat_history(
                     "content": m.content,
                     "confidence": m.confidence,
                     "sources": m.sources,
-                    "created_at": m.created_at.isoformat(),
+                    "created_at": to_ist_iso(m.created_at),
                 }
                 for m in msgs
             ],

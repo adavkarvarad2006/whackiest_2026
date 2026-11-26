@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, PlainSerializer
+
+from app.timezone_utils import to_ist_iso
+
+ISTDatetime = Annotated[datetime, PlainSerializer(lambda dt: to_ist_iso(dt), return_type=str)]
 
 
 # ---------------------------------------------------------------------------
@@ -29,7 +33,7 @@ class UserOut(BaseModel):
     name: str
     email: EmailStr
     is_demo: bool = False
-    created_at: datetime
+    created_at: ISTDatetime
 
 
 class TokenResponse(BaseModel):
@@ -49,7 +53,7 @@ class DocumentOut(BaseModel):
     file_hash: str
     file_size_bytes: int
     page_count: int
-    upload_date: datetime
+    upload_date: ISTDatetime
     processing_status: str
     error_message: Optional[str] = None
     chunk_count: int = 0
@@ -105,7 +109,7 @@ class FindingOut(BaseModel):
     confidence: str
     evidence: list[dict[str, Any]] = Field(default_factory=list)
     status: str
-    created_at: datetime
+    created_at: ISTDatetime
 
 
 # ---------------------------------------------------------------------------
@@ -150,7 +154,7 @@ class ChatMessageOut(BaseModel):
     confidence: Optional[str] = None
     sources: list[dict[str, Any]] = Field(default_factory=list)
     retrieval_mode: Optional[str] = None
-    created_at: datetime
+    created_at: ISTDatetime
 
 
 class ChatHistoryOut(BaseModel):
@@ -163,5 +167,5 @@ class ConversationSummaryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     title: str
-    created_at: datetime
-    updated_at: datetime
+    created_at: ISTDatetime
+    updated_at: ISTDatetime

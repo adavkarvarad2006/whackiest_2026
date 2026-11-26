@@ -7,6 +7,7 @@ import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { FixWizardModal } from "@/components/FixWizardModal";
 import { PdfViewerModal } from "@/components/PdfViewerModal";
 import { api } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import { FindingItem } from "@/lib/types";
 
 export default function EvidencePage() {
@@ -144,6 +145,12 @@ export default function EvidencePage() {
                   <span>{f.evidence?.source_document || "Uploaded Document"}</span>
                   <span>•</span>
                   <span>Page {f.evidence?.page_number ?? 1}</span>
+                  {f.created_at && (
+                    <>
+                      <span>•</span>
+                      <span>{formatISTWithTz(f.created_at)}</span>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">

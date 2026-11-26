@@ -27,6 +27,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TypeDecorator
 
 from app.database import Base
+from app.timezone_utils import get_utc_now
 
 
 class VectorType(TypeDecorator):
@@ -105,7 +106,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
     )
 
     documents: Mapped[list[Document]] = relationship(back_populates="user", cascade="all, delete-orphan")
@@ -127,7 +128,7 @@ class Document(Base):
     file_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     page_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     upload_date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
     )
     processing_status: Mapped[str] = mapped_column(String(40), nullable=False, default="PENDING")
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -217,7 +218,7 @@ class Finding(Base):
     evidence: Mapped[list[dict[str, Any]]] = mapped_column(JSONBType(), nullable=False, default=list)
     status: Mapped[str] = mapped_column(String(40), nullable=False, default="OPEN")
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
     )
 
 
@@ -228,10 +229,10 @@ class Conversation(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False, default="Ask ArthaLens Session")
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, onupdate=get_utc_now, nullable=False
     )
 
     messages: Mapped[list[ChatMessage]] = relationship(back_populates="conversation", cascade="all, delete-orphan")
@@ -254,7 +255,7 @@ class ChatMessage(Base):
     sources: Mapped[list[dict[str, Any]]] = mapped_column(JSONBType(), nullable=False, default=list)
     retrieval_mode: Mapped[str | None] = mapped_column(String(30), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
     )
 
     conversation: Mapped[Conversation] = relationship(back_populates="messages")
@@ -276,7 +277,7 @@ class ExtractedEntityRecord(Base):
     supporting_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     confidence: Mapped[str] = mapped_column(String(40), nullable=False, default="HIGH")
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, nullable=False
     )
 
 
@@ -295,5 +296,5 @@ class FindingProgress(Base):
     feedback_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), default=get_utc_now, onupdate=get_utc_now, nullable=False
     )

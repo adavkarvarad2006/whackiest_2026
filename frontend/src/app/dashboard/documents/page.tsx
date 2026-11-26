@@ -15,6 +15,7 @@ import {
 import { DashboardShell } from "@/components/DashboardShell";
 import { PdfViewerModal } from "@/components/PdfViewerModal";
 import { api } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import { DocumentItem, DocumentType } from "@/lib/types";
 
 const PIPELINE_STAGES = [
@@ -382,6 +383,9 @@ export default function DocumentsPage() {
                         {doc.doc_type} • {doc.page_count} pg • {doc.status}
                         {doc.is_demo ? " • Demo" : ""}
                       </p>
+                      <p className="mt-0.5 text-[10px] text-[#888888]">
+                        {formatISTWithTz(doc.uploaded_at)}
+                      </p>
                     </div>
                   </div>
                   <button
@@ -456,6 +460,9 @@ export default function DocumentsPage() {
                   <h3 className="mt-3 text-lg font-semibold text-[#111111]">
                     {selectedDoc.filename}
                   </h3>
+                  <p className="mt-1 text-xs text-[#777777]">
+                    Uploaded: {formatISTWithTz(selectedDoc.uploaded_at)}
+                  </p>
                   <p className="mt-1 text-xs text-[#777777]">
                     {selectedDoc.summary}
                   </p>
@@ -548,6 +555,7 @@ export default function DocumentsPage() {
         documentId={pdfPreviewDoc?.id}
         filename={pdfPreviewDoc?.filename || "document.pdf"}
         initialPage={1}
+        uploadedAt={pdfPreviewDoc?.uploaded_at}
         onClose={() => setPdfPreviewDoc(null)}
       />
     </DashboardShell>

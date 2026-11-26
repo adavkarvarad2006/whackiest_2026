@@ -1,6 +1,6 @@
 """Findings, financial assets, dashboard, transactions, and evaluation endpoints."""
 
-from datetime import datetime, timezone
+from datetime import datetime
 import json
 from pathlib import Path
 
@@ -14,6 +14,7 @@ from app.database import get_db
 from app.models import Document, FinancialAsset, Finding, FindingProgress, Transaction, User
 from app.schemas import FinancialAssetOut, FindingOut, TransactionOut
 from app.services import sql_analytics
+from app.timezone_utils import get_ist_now, get_utc_now, to_ist_iso
 
 router = APIRouter(prefix="/api", tags=["intelligence"])
 
@@ -118,8 +119,8 @@ def _ui_finding(f: Finding, user_id: int, is_demo: bool, progress: FindingProgre
         "resolution_evidence": progress.verification_evidence if progress else None,
         "feedback_wrong": f.status == "DISMISSED",
         "feedback_note": progress.feedback_note if progress else None,
-        "resolved_at": progress.resolved_at.isoformat() if progress and progress.resolved_at else None,
-        "created_at": f.created_at.isoformat() if f.created_at else None,
+        "resolved_at": to_ist_iso(progress.resolved_at) if progress and progress.resolved_at else None,
+        "created_at": to_ist_iso(f.created_at) if f.created_at else None,
     }
 
 
@@ -215,6 +216,7 @@ def get_dashboard(
         "nominee_tiles": tiles,
         "recent_findings": [_ui_finding(f, current_user.id, is_demo, prog_map.get(f.id)) for f in findings],
         "has_demo_data": is_demo or len(assets) > 0,
+        "server_time_ist": get_ist_now().isoformat(),
     }
 
 
@@ -255,7 +257,7 @@ def _upsert_finding_progress(
     if feedback_note is not None:
         prog.feedback_note = feedback_note
     if resolved:
-        prog.resolved_at = datetime.now(timezone.utc)
+        prog.resolved_at = get_utc_now()
     return prog
 
 

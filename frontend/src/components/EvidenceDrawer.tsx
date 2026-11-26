@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { FindingItem } from "@/lib/types";
 import { api } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import { PdfViewerModal } from "./PdfViewerModal";
 
 interface EvidenceDrawerProps {
@@ -132,6 +133,11 @@ export function EvidenceDrawer({
                   <h2 className="text-xl font-semibold tracking-tight text-[#111111]">
                     {finding.title}
                   </h2>
+                  {finding.created_at && (
+                    <p className="mt-1 text-[11px] text-[#777777]">
+                      Recorded: {formatISTWithTz(finding.created_at)}
+                    </p>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -255,6 +261,11 @@ export function EvidenceDrawer({
                   <p className="mt-1 text-xs text-green-700">
                     {finding.resolution_evidence}
                   </p>
+                  {finding.resolved_at && (
+                    <p className="mt-1 text-[11px] text-green-700/80">
+                      Completed: {formatISTWithTz(finding.resolved_at)}
+                    </p>
+                  )}
                 </div>
               )}
 

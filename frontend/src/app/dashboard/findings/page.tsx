@@ -6,6 +6,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { FixWizardModal } from "@/components/FixWizardModal";
 import { api } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import { FindingItem } from "@/lib/types";
 
 const SEVERITY_ORDER: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
@@ -112,11 +113,10 @@ export default function FindingsPage() {
                 key={tab}
                 type="button"
                 onClick={() => setStatusFilter(tab)}
-                className={`rounded-full px-4 py-1.5 text-xs font-medium border transition-colors ${
-                  statusFilter === tab
-                    ? "bg-[#090909] text-white border-[#090909]"
-                    : "bg-white text-[#777777] border-[#E8E8E8] hover:text-[#111111]"
-                }`}
+                className={`rounded-full px-4 py-1.5 text-xs font-medium border transition-colors ${statusFilter === tab
+                  ? "bg-[#090909] text-white border-[#090909]"
+                  : "bg-white text-[#777777] border-[#E8E8E8] hover:text-[#111111]"
+                  }`}
               >
                 {tab}
               </button>
@@ -226,13 +226,12 @@ export default function FindingsPage() {
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
-                      className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
-                        f.severity === "High"
-                          ? "bg-red-50 text-red-700 border-red-200"
-                          : f.severity === "Medium"
+                      className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${f.severity === "High"
+                        ? "bg-red-50 text-red-700 border-red-200"
+                        : f.severity === "Medium"
                           ? "bg-amber-50 text-amber-700 border-amber-200"
                           : "bg-neutral-100 text-[#111111] border-[#E8E8E8]"
-                      }`}
+                        }`}
                     >
                       {f.severity}
                     </span>
@@ -247,6 +246,7 @@ export default function FindingsPage() {
                   <p className="inline-flex items-center gap-1.5 text-xs text-[#777777]">
                     <FileText className="h-3.5 w-3.5" />
                     {f.evidence.source_document} • Page {f.evidence.page_number}
+                    {f.created_at ? ` • ${formatISTWithTz(f.created_at)}` : ""}
                   </p>
                 </div>
 

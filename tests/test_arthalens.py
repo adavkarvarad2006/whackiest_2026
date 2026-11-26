@@ -602,3 +602,93 @@ def test_11_interactive_actions_progress_profile_and_chat_delete(client_and_db):
     assert del_res.json()["deleted"] is True
     after_res = client.get(f"/api/chat/history/{cid}", headers=headers_a)
     assert after_res.status_code == 404
+
+
+def test_12_ist_timezone_consistency_and_exports(client_and_db):
+    import json
+    from datetime import date, datetime, timezone
+    from unittest.mock import patch
+    import pymupdf
+    from app.services.nlp.syntactic import resolve_relative_temporal_windows
+    from app.timezone_utils import IST, format_ist_display, get_ist_now, to_ist, to_ist_iso
+
+    client, _SessionLocal = client_and_db
+    login_a = client.post(
+        "/api/auth/login",
+        json={"email": "ananya.test@example.com", "password": "SecurePassword123!"},
+    )
+    headers_a = {"Authorization": f"Bearer {login_a.json()['access_token']}"}
+    assert "+05:30" in login_a.json()["user"]["created_at"]
+
+    # 1. UTC -> IST midnight boundary & idempotency (no repeated +5:30 shift)
+    now_ist = get_ist_now()
+    assert now_ist.tzinfo == IST
+    utc_late = datetime(2026, 11, 26, 19, 0, 0, tzinfo=timezone.utc)
+    converted = to_ist(utc_late)
+    assert to_ist_iso(utc_late) == "2026-11-27T00:30:00+05:30"
+    assert to_ist_iso(converted) == "2026-11-27T00:30:00+05:30"
+    assert format_ist_display(utc_late) == "27 Nov 2026, 12:30 AM IST"
+    assert format_ist_display(datetime(2026, 11, 26, 18, 45, 0)) == "27 Nov 2026, 12:15 AM IST"
+
+    # 2. Dashboard, Documents & Findings timestamps include +05:30
+    dash = client.get("/api/dashboard", headers=headers_a).json()
+    assert dash["server_time_ist"].endswith("+05:30")
+    docs = client.get("/api/documents", headers=headers_a).json()
+    assert all(d["uploaded_at"].endswith("+05:30") for d in docs)
+    findings = client.get("/api/findings", headers=headers_a).json()
+    assert all(f["created_at"].endswith("+05:30") for f in findings if f.get("created_at"))
+
+    # 3. Relative date resolution in Asia/Kolkata ("today", "yesterday", "this month", "last week")
+    ref_day = date(2026, 11, 27)
+    wins = resolve_relative_temporal_windows(
+        "Compare spending today vs yesterday and this month vs last week",
+        today_ist=ref_day,
+    )
+    by_expr = {w["expression"]: w for w in wins}
+    assert by_expr["today"]["start_date"] == "2026-11-27"
+    assert by_expr["yesterday"]["start_date"] == "2026-11-26"
+    assert by_expr["this_month"]["start_date"] == "2026-11-01"
+    assert by_expr["last_week"]["start_date"] == "2026-11-16"
+    assert by_expr["last_week"]["end_date"] == "2026-11-22"
+
+    # 4. Chatbot query with relative IST date + export PDF/TXT/JSON timestamps
+    mock_reply = {
+        "answer": "Checked expenses for today in Asia/Kolkata.",
+        "confidence": "HIGH",
+        "sources": [{"document": "Bank_Statement.pdf", "page": 1, "evidence": "Statement Period"}],
+    }
+    with patch("app.services.chat.generate_grounded_answer", return_value=mock_reply):
+        chat_res = client.post(
+            "/api/chat",
+            headers=headers_a,
+            json={"question": "Show my expenses today"},
+        )
+    assert chat_res.status_code == 200
+    body = chat_res.json()
+    assert body["nlp_metadata"]["timezone"] == "Asia/Kolkata"
+    assert any(w["expression"] == "today" for w in body["nlp_metadata"]["temporal_windows"])
+    cid = body["conversation_id"]
+
+    # History returns +05:30 timestamps
+    hist = client.get(f"/api/chat/history?conversation_id={cid}", headers=headers_a).json()
+    assert hist[0]["updated_at"].endswith("+05:30")
+    assert all(m["created_at"].endswith("+05:30") for m in hist[0]["messages"])
+
+    # JSON export preserves IST +05:30 ISO 8601 timestamps
+    exp_json = client.get(f"/api/chat/history/{cid}/export?format=json", headers=headers_a)
+    jdata = json.loads(exp_json.content.decode("utf-8"))
+    assert jdata["timezone"] == "Asia/Kolkata"
+    assert jdata["exported_at"].endswith("+05:30")
+    assert jdata["conversations"][0]["created_at"].endswith("+05:30")
+
+    # TXT export renders IST (and never UTC)
+    exp_txt = client.get(f"/api/chat/history/{cid}/export?format=txt", headers=headers_a)
+    txt = exp_txt.content.decode("utf-8")
+    assert "IST" in txt and "UTC" not in txt
+
+    # PDF export renders IST (and never UTC)
+    exp_pdf = client.get(f"/api/chat/history/{cid}/export?format=pdf", headers=headers_a)
+    pdoc = pymupdf.open(stream=exp_pdf.content, filetype="pdf")
+    ptxt = "\n".join(pg.get_text() for pg in pdoc)
+    pdoc.close()
+    assert "IST" in ptxt and "UTC" not in ptxt

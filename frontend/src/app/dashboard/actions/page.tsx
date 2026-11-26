@@ -6,6 +6,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { FixWizardModal } from "@/components/FixWizardModal";
 import { api } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import { FindingItem } from "@/lib/types";
 
 export default function ActionsPage() {
@@ -124,6 +125,7 @@ export default function ActionsPage() {
                     <p className="text-xs font-semibold text-[#111111]">{f.title}</p>
                     <p className="mt-1 text-xs text-[#777777]">
                       Verification: {f.resolution_evidence || "Verified and resolved"}
+                      {f.resolved_at ? ` • ${formatISTWithTz(f.resolved_at)}` : ""}
                     </p>
                   </div>
                 </div>

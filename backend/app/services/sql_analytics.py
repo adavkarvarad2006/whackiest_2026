@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import date
 from typing import Any
 
 from sqlalchemy import func, select
@@ -10,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Document, FinancialAsset, Finding, Transaction
 from app.services.intelligence import get_reference_date
+from app.timezone_utils import IST_TIMEZONE, format_ist_display, get_ist_now
 
 
 def sql_bank_accounts_summary(db: Session, user_id: int) -> dict[str, Any]:
@@ -279,4 +281,61 @@ def sql_holistic_financial_health(db: Session, user_id: int) -> dict[str, Any]:
             "GREEN": [f for f in open_findings if f["severity"] == "GREEN"],
         },
         "total_assets_count": len(assets),
+    }
+
+
+def sql_transactions_in_window(
+    db: Session,
+    user_id: int,
+    start_date_str: str,
+    end_date_str: str,
+    label: str,
+) -> dict[str, Any]:
+    """Query exact financial transactions falling within an Asia/Kolkata (IST) calendar window."""
+    start_d = date.fromisoformat(start_date_str)
+    end_d = date.fromisoformat(end_date_str)
+    rows = db.execute(
+        select(Transaction, Document.filename)
+        .join(Document, Document.id == Transaction.document_id)
+        .where(
+            Transaction.user_id == user_id,
+            Transaction.transaction_date >= start_d,
+            Transaction.transaction_date <= end_d,
+        )
+        .order_by(Transaction.transaction_date.desc(), Transaction.id.desc())
+    ).all()
+
+    items = [
+        {
+            "date": tx.transaction_date.isoformat(),
+            "description": tx.description,
+            "amount_inr": round(float(tx.amount), 2),
+            "transaction_type": tx.transaction_type,
+            "category": tx.category,
+            "source_document": fname,
+            "page": tx.page_number,
+        }
+        for tx, fname in rows
+    ]
+    total_debits = round(sum(i["amount_inr"] for i in items if i["transaction_type"] == "DEBIT"), 2)
+    total_credits = round(sum(i["amount_inr"] for i in items if i["transaction_type"] == "CREDIT"), 2)
+    return {
+        "expression": label,
+        "timezone": IST_TIMEZONE,
+        "start_date": start_date_str,
+        "end_date": end_date_str,
+        "transaction_count": len(items),
+        "total_debits_inr": total_debits,
+        "total_credits_inr": total_credits,
+        "transactions": items[:25],
+    }
+
+
+def get_ist_runtime_context() -> dict[str, str]:
+    now_ist = get_ist_now()
+    return {
+        "timezone": "Asia/Kolkata (IST, UTC+05:30)",
+        "current_date_ist": now_ist.date().isoformat(),
+        "current_datetime_ist": format_ist_display(now_ist, long_month=True),
+        "current_iso_ist": now_ist.isoformat(),
     }

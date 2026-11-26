@@ -21,6 +21,7 @@ import {
 import { DashboardShell } from "@/components/DashboardShell";
 import { PdfViewerModal } from "@/components/PdfViewerModal";
 import { api } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import { ChatConfidence, ChatConversation, ChatMessage, ChatSource } from "@/lib/types";
 
 const DEFAULT_SUGGESTED_QUESTIONS = [
@@ -355,7 +356,7 @@ export default function AskArthaLensPage() {
                           isActive ? "text-white/60" : "text-[#777777]"
                         }`}
                       >
-                        {conv.messages.length} messages
+                        {conv.messages.length} msgs • {formatISTWithTz(conv.updated_at)}
                       </p>
                     </button>
                     <button
@@ -386,7 +387,12 @@ export default function AskArthaLensPage() {
                 {conversations.find((c) => c.conversation_id === activeId)?.title || "New Conversation"}
               </p>
               <p className="text-[11px] text-[#777777]">
-                {messages.length > 0 ? `${messages.length} message(s) in thread` : "Select a thread or ask a question"}
+                {messages.length > 0
+                  ? `${messages.length} message(s) • Updated ${formatISTWithTz(
+                      conversations.find((c) => c.conversation_id === activeId)?.updated_at ||
+                        messages[messages.length - 1]?.created_at
+                    )}`
+                  : "Select a thread or ask a question (IST)"}
               </p>
             </div>
 
@@ -502,6 +508,13 @@ export default function AskArthaLensPage() {
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{msg.content}</p>
+                      <p
+                        className={`mt-1.5 text-[10px] ${
+                          isUser ? "text-white/55 text-right" : "text-[#888888]"
+                        }`}
+                      >
+                        {formatISTWithTz(msg.created_at)}
+                      </p>
 
                       {!isUser && (
                         <div className="mt-3.5 pt-3 border-t border-[#E8E8E8] flex flex-wrap items-center gap-2">

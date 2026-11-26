@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { X, Check, Copy, ShieldAlert } from "lucide-react";
 import { FindingItem } from "@/lib/types";
 import { api } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 
 interface FixWizardModalProps {
   finding: FindingItem | null;
@@ -116,6 +117,13 @@ export function FixWizardModal({
             <h2 className="mt-1 text-lg font-semibold text-[#111111]">
               {finding.title}
             </h2>
+            {(finding.resolved_at || finding.created_at) && (
+              <p className="mt-0.5 text-[11px] text-[#777777]">
+                {finding.resolved_at
+                  ? `Resolved: ${formatISTWithTz(finding.resolved_at)}`
+                  : `Flagged: ${formatISTWithTz(finding.created_at)}`}
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -171,11 +179,10 @@ export function FixWizardModal({
                       className="w-full flex items-start gap-3 rounded-xl border border-[#E8E8E8] bg-white p-3 text-left hover:border-[#111111]/40 transition-colors"
                     >
                       <span
-                        className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                          done
-                            ? "bg-[#090909] border-[#090909] text-white"
-                            : "border-[#CCCCCC]"
-                        }`}
+                        className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${done
+                          ? "bg-[#090909] border-[#090909] text-white"
+                          : "border-[#CCCCCC]"
+                          }`}
                       >
                         {done && <Check className="h-3 w-3" />}
                       </span>

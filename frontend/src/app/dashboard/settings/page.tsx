@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, RefreshCw } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { api, clearAuthSession } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import { User } from "@/lib/types";
 
 export default function SettingsPage() {
@@ -98,6 +99,11 @@ export default function SettingsPage() {
             <div className="rounded-2xl border border-[#E8E8E8] bg-[#F7F7F7] p-3.5">
               <p className="text-[#777777]">Email</p>
               <p className="mt-1 font-semibold text-[#111111]">{user?.email || "—"}</p>
+              {user?.created_at && (
+                <p className="mt-1 text-[11px] text-[#777777]">
+                  Joined: {formatISTWithTz(user.created_at)}
+                </p>
+              )}
             </div>
           </div>
 

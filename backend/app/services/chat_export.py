@@ -5,7 +5,6 @@ from __future__ import annotations
 import io
 import json
 import re
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from xml.sax.saxutils import escape
@@ -19,6 +18,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import HRFlowable, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.models import ChatMessage, Conversation
+from app.timezone_utils import IST_TIMEZONE, format_ist_display, get_ist_now, to_ist_iso
 
 # Register a Unicode-capable font supporting ₹ (INR) across Windows and Linux Docker
 _FONTS_INITIALIZED = False
@@ -70,8 +70,8 @@ def _serialize_conversation(conv: Conversation, msgs: list[ChatMessage]) -> dict
     return {
         "conversation_id": str(conv.id),
         "title": conv.title,
-        "created_at": conv.created_at.isoformat() if conv.created_at else None,
-        "updated_at": conv.updated_at.isoformat() if conv.updated_at else None,
+        "created_at": to_ist_iso(conv.created_at),
+        "updated_at": to_ist_iso(conv.updated_at),
         "messages": [
             {
                 "id": m.id,
@@ -79,7 +79,7 @@ def _serialize_conversation(conv: Conversation, msgs: list[ChatMessage]) -> dict
                 "content": m.content,
                 "confidence": m.confidence,
                 "sources": [_normalize_source_item(s) for s in (m.sources or [])],
-                "created_at": m.created_at.isoformat() if m.created_at else None,
+                "created_at": to_ist_iso(m.created_at),
             }
             for m in msgs
         ],
@@ -90,10 +90,11 @@ def build_json_export(
     conversations_with_msgs: list[tuple[Conversation, list[ChatMessage]]],
     scope: str,
 ) -> bytes:
-    exported_at = datetime.now(timezone.utc).isoformat()
+    exported_at = get_ist_now().isoformat()
     payload = {
         "application": "ArthaLens",
         "subtitle": "Financial Document Intelligence",
+        "timezone": IST_TIMEZONE,
         "export_scope": scope,
         "exported_at": exported_at,
         "conversation_count": len(conversations_with_msgs),
@@ -105,7 +106,7 @@ def build_json_export(
 def build_txt_export(
     conversations_with_msgs: list[tuple[Conversation, list[ChatMessage]]],
 ) -> bytes:
-    exported_str = datetime.now(timezone.utc).strftime("%d %B %Y, %H:%M UTC")
+    exported_str = format_ist_display(get_ist_now(), long_month=True)
     lines: list[str] = [
         "ARTHALENS",
         "Financial Document Intelligence",
@@ -124,7 +125,7 @@ def build_txt_export(
         lines.append(f"Conversation: {conv.title}")
         lines.append(f"Conversation ID: {conv.id}")
         if conv.created_at:
-            lines.append(f"Created: {conv.created_at.strftime('%d %b %Y %H:%M UTC')}")
+            lines.append(f"Created: {format_ist_display(conv.created_at)}")
         lines.append("")
 
         if not msgs:
@@ -132,7 +133,7 @@ def build_txt_export(
             continue
 
         for m in msgs:
-            ts = m.created_at.strftime("%d %b %Y %H:%M UTC") if m.created_at else "Unknown time"
+            ts = format_ist_display(m.created_at) if m.created_at else "Unknown time"
             speaker = "USER" if m.role == "user" else "ASK ARTHALENS"
             lines.append(f"{speaker} [{ts}]:")
             lines.append(m.content)
@@ -160,7 +161,7 @@ def build_pdf_export(
     conversations_with_msgs: list[tuple[Conversation, list[ChatMessage]]],
 ) -> bytes:
     f_reg, f_bold = _ensure_fonts()
-    exported_str = datetime.now(timezone.utc).strftime("%d %B %Y, %H:%M UTC")
+    exported_str = format_ist_display(get_ist_now(), long_month=True)
 
     st_title = ParagraphStyle("ExpTitle", fontName=f_bold, fontSize=16, leading=20, textColor=colors.white)
     st_sub = ParagraphStyle("ExpSub", fontName=f_reg, fontSize=8.5, leading=11, textColor=colors.HexColor("#D4D4D8"))
@@ -198,7 +199,7 @@ def build_pdf_export(
                 story.append(PageBreak())
 
             story.append(Paragraph(escape(conv.title or "Untitled Conversation"), st_conv_h))
-            created_txt = conv.created_at.strftime("%d %b %Y, %H:%M UTC") if conv.created_at else "N/A"
+            created_txt = format_ist_display(conv.created_at) if conv.created_at else "N/A"
             story.append(Paragraph(f"Conversation ID: {escape(str(conv.id))}  |  Created: {escape(created_txt)}", st_meta))
             story.append(Spacer(1, 2.5 * mm))
             story.append(HRFlowable(width="100%", thickness=0.6, color=colors.HexColor("#E4E4E7")))
@@ -209,7 +210,7 @@ def build_pdf_export(
                 continue
 
             for m in msgs:
-                ts = m.created_at.strftime("%d %b %Y, %H:%M UTC") if m.created_at else ""
+                ts = format_ist_display(m.created_at) if m.created_at else ""
                 is_user = m.role == "user"
                 speaker = "USER" if is_user else "ASK ARTHALENS"
                 conf_label = f"  |  CONFIDENCE: {escape(str(m.confidence).replace('_', ' '))}" if (not is_user and m.confidence) else ""

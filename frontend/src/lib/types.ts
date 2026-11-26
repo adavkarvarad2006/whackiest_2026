@@ -16,6 +16,7 @@ export interface User {
   name: string;
   email: string;
   is_demo: boolean;
+  created_at?: string;
 }
 
 export interface ExtractedEntity {
@@ -109,6 +110,7 @@ export interface DashboardSummary {
   nominee_tiles: NomineeAssetTile[];
   recent_findings: FindingItem[];
   has_demo_data: boolean;
+  server_time_ist?: string;
 }
 
 export type ChatConfidence = "HIGH" | "MEDIUM" | "NEEDS_REVIEW" | "LOW" | string;
@@ -160,6 +162,7 @@ export interface ChatMessage {
 export interface ChatConversation {
   conversation_id: string;
   title: string;
+  created_at?: string;
   updated_at: string;
   messages: ChatMessage[];
 }

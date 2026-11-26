@@ -50,6 +50,19 @@ def gather_sql_context_for_intent(
     ):
         sql_data["assets_and_findings"] = sql_analytics.sql_all_assets_and_findings(db, user_id)
 
+    sql_data["ist_time_context"] = sql_analytics.get_ist_runtime_context()
+    if getattr(syntax, "temporal_windows", None):
+        sql_data["relative_date_windows"] = [
+            sql_analytics.sql_transactions_in_window(
+                db,
+                user_id,
+                w["start_date"],
+                w["end_date"],
+                w["expression"],
+            )
+            for w in syntax.temporal_windows
+        ]
+
     route = intent_res.processing_route
     if sql_data and route == "RAG" and (syntax.is_comparison or syntax.has_negation or syntax.is_superlative):
         route = "HYBRID"

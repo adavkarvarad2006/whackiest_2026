@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import { api } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import {
   computeFitScale,
   computeHighlightRect,
@@ -31,6 +32,7 @@ interface PdfViewerModalProps {
   filename: string;
   initialPage?: number;
   evidence?: string;
+  uploadedAt?: string;
   onClose: () => void;
 }
 
@@ -40,6 +42,7 @@ export function PdfViewerModal({
   filename,
   initialPage = 1,
   evidence,
+  uploadedAt,
   onClose,
 }: PdfViewerModalProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -343,6 +346,7 @@ export function PdfViewerModal({
               <p className="text-sm font-semibold text-[#111111] truncate">{filename}</p>
               <p className="text-[11px] text-[#777777]">
                 Original PDF Viewer {numPages > 0 ? `• Page ${currentPage} of ${numPages}` : ""}
+                {uploadedAt ? ` • Uploaded ${formatISTWithTz(uploadedAt)}` : " • Asia/Kolkata (IST)"}
               </p>
             </div>
           </div>

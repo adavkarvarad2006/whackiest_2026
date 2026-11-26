@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { ArthaLogo } from "./ArthaLogo";
 import { api, clearAuthSession, getStoredToken, getStoredUser } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import { FindingItem, User } from "@/lib/types";
 
 const NAV_ITEMS = [
@@ -55,8 +56,16 @@ export function DashboardShell({
   const [profileOpen, setProfileOpen] = useState(false);
   const [alerts, setAlerts] = useState<FindingItem[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(false);
+  const [istClock, setIstClock] = useState<string>("");
   const notifRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const syncClock = () => setIstClock(formatISTWithTz(new Date()));
+    syncClock();
+    const timer = setInterval(syncClock, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadNotifications = useCallback(async () => {
     setLoadingAlerts(true);
@@ -208,6 +217,11 @@ export function DashboardShell({
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
+            {istClock && (
+              <span className="hidden xl:inline-flex items-center rounded-full border border-[#E8E8E8] bg-[#F7F7F7] px-3 py-1 text-[11px] font-medium text-[#555555] tabular-nums">
+                {istClock}
+              </span>
+            )}
             {hasDemoData && (
               <span className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-[#E8E8E8] bg-[#F7F7F7] px-3 py-1 text-[11px] font-medium text-[#777777]">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
@@ -277,6 +291,11 @@ export function DashboardShell({
                           <p className="mt-0.5 text-xs font-medium text-[#111111] truncate">
                             {item.title}
                           </p>
+                          {item.created_at && (
+                            <p className="mt-0.5 text-[10px] text-[#777777]">
+                              {formatISTWithTz(item.created_at)}
+                            </p>
+                          )}
                         </button>
                       ))}
                       <Link

@@ -15,6 +15,7 @@ from app.models import Document, DocumentChunk, FinancialAsset, Finding, Transac
 from app.schemas import DocumentDetailOut, DocumentOut
 from app.services.ingestion import ingest_uploaded_pdf, process_existing_document
 from app.services.intelligence import recompute_user_findings
+from app.timezone_utils import to_ist_iso
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
@@ -61,7 +62,7 @@ def _to_ui_doc(db: Session, doc: Document, chunk_count: int, is_demo: bool) -> d
     base = DocumentOut.model_validate(doc).model_dump()
     base["chunk_count"] = chunk_count
     base["doc_type"] = DOC_TYPE_DISPLAY.get(doc.document_type, "Bank Statement")
-    base["uploaded_at"] = doc.upload_date.isoformat()
+    base["uploaded_at"] = to_ist_iso(doc.upload_date)
     base["size_bytes"] = doc.file_size_bytes
     base["status"] = "Processed" if doc.processing_status == "COMPLETED" else ("Error" if doc.processing_status == "FAILED" else "Processing")
     base["pipeline_stage"] = "Generate Findings" if doc.processing_status == "COMPLETED" else "Extract"

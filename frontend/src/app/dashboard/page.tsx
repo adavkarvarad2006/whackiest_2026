@@ -18,6 +18,7 @@ import { NomineeCoverageCard } from "@/components/NomineeCoverageCard";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { FixWizardModal } from "@/components/FixWizardModal";
 import { api, formatINR } from "@/lib/api";
+import { formatISTWithTz } from "@/lib/dateUtils";
 import { DashboardSummary, FindingItem } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -100,7 +101,10 @@ export default function DashboardPage() {
           {/* Toolbar: Quick Refresh */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs text-[#777777]">
-              <span>Interactive summary synced with PostgreSQL/RAG pipeline</span>
+              <span>
+                Interactive summary synced with PostgreSQL/RAG pipeline
+                {data.server_time_ist ? ` • ${formatISTWithTz(data.server_time_ist)}` : ""}
+              </span>
             </div>
             <button
               type="button"
@@ -350,6 +354,7 @@ export default function DashboardPage() {
                       <p className="inline-flex items-center gap-1.5 text-xs text-[#777777]">
                         <FileText className="h-3.5 w-3.5" />
                         {finding.evidence.source_document} • Page {finding.evidence.page_number}
+                        {finding.created_at ? ` • ${formatISTWithTz(finding.created_at)}` : ""}
                       </p>
                     </div>
 

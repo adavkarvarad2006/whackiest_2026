@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from calendar import monthrange
+from dataclasses import dataclass, field
+from datetime import date, timedelta
 
 from app.services.nlp.lexical import LexicalAnalysis
+from app.timezone_utils import get_ist_today
 
 
 @dataclass
@@ -19,6 +22,7 @@ class SyntacticAnalysis:
     verb: str | None
     obj: str | None
     relation: str | None
+    temporal_windows: list[dict[str, str]] = field(default_factory=list)
 
 
 NEGATION_WORDS = {"not", "no", "never", "without", "missing", "absent", "unavailable", "blank", "lack", "lacking", "nahi", "nhi"}
@@ -26,6 +30,17 @@ COMPARISON_WORDS = {"compare", "comparison", "mismatch", "discrepancy", "differe
 SUPERLATIVE_WORDS = {"highest", "lowest", "largest", "biggest", "smallest", "most", "least", "maximum", "minimum", "top"}
 
 TEMPORAL_PATTERNS = [
+    r"\btoday\b",
+    r"\byesterday\b",
+    r"\bthis week\b",
+    r"\blast week\b",
+    r"\bthis month\b",
+    r"\blast month\b",
+    r"\baaj\b",
+    r"\bkal\b",
+    r"\bis hafte\b",
+    r"\bpichhle hafte\b",
+    r"\bis mahine\b",
     r"\bevery month\b",
     r"\bmonthly\b",
     r"\bannually\b",
@@ -37,6 +52,37 @@ TEMPORAL_PATTERNS = [
     r"\bdue date\b",
     r"\bmaturity date\b",
 ]
+
+
+def resolve_relative_temporal_windows(norm_text: str, today_ist: date | None = None) -> list[dict[str, str]]:
+    """Resolve relative date phrases ('today', 'yesterday', 'this month', 'last week') strictly in Asia/Kolkata."""
+    ref = today_ist or get_ist_today()
+    low = norm_text.lower()
+    windows: list[dict[str, str]] = []
+
+    if re.search(r"\b(today|aaj)\b", low):
+        windows.append({"expression": "today", "start_date": ref.isoformat(), "end_date": ref.isoformat(), "timezone": "Asia/Kolkata"})
+    if re.search(r"\b(yesterday|kal)\b", low):
+        y = ref - timedelta(days=1)
+        windows.append({"expression": "yesterday", "start_date": y.isoformat(), "end_date": y.isoformat(), "timezone": "Asia/Kolkata"})
+    if re.search(r"\b(this week|is hafte)\b", low):
+        start = ref - timedelta(days=ref.weekday())
+        windows.append({"expression": "this_week", "start_date": start.isoformat(), "end_date": ref.isoformat(), "timezone": "Asia/Kolkata"})
+    if re.search(r"\b(last week|pichhle hafte)\b", low):
+        this_mon = ref - timedelta(days=ref.weekday())
+        last_mon = this_mon - timedelta(days=7)
+        last_sun = this_mon - timedelta(days=1)
+        windows.append({"expression": "last_week", "start_date": last_mon.isoformat(), "end_date": last_sun.isoformat(), "timezone": "Asia/Kolkata"})
+    if re.search(r"\b(this month|is mahine)\b", low):
+        start = ref.replace(day=1)
+        windows.append({"expression": "this_month", "start_date": start.isoformat(), "end_date": ref.isoformat(), "timezone": "Asia/Kolkata"})
+    if re.search(r"\b(last month|pichhle mahine)\b", low):
+        first_this = ref.replace(day=1)
+        last_prev = first_this - timedelta(days=1)
+        first_prev = last_prev.replace(day=1)
+        windows.append({"expression": "last_month", "start_date": first_prev.isoformat(), "end_date": last_prev.isoformat(), "timezone": "Asia/Kolkata"})
+
+    return windows
 
 
 def _detect_question_type(norm_text: str, orig_text: str) -> str:
@@ -77,6 +123,7 @@ def analyze_syntax(lexical: LexicalAnalysis) -> SyntacticAnalysis:
     for pat in TEMPORAL_PATTERNS:
         for m in re.finditer(pat, norm):
             temporal_hits.append(m.group(0))
+    temporal_windows = resolve_relative_temporal_windows(norm)
 
     # Identify core financial subject / object / grammatical relation
     subject = None
@@ -128,4 +175,5 @@ def analyze_syntax(lexical: LexicalAnalysis) -> SyntacticAnalysis:
         verb=verb,
         obj=obj,
         relation=relation,
+        temporal_windows=temporal_windows,
     )
