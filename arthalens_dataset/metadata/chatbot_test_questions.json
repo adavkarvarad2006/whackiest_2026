@@ -1,0 +1,5196 @@
+[
+  {
+    "test_id": "TEST001",
+    "customer_id": "CUST001",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. MetroCivic Co-operative Bank Ltd. (DEMO) (DEMO-SB-770211) appears in ais_report.pdf (Page 2) with \u20b93,600.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST001_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST001_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST002",
+    "customer_id": "CUST001",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600043 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b99,750.73.",
+    "expected_sources": [
+      {
+        "document_id": "CUST001_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST003",
+    "customer_id": "CUST001",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b9915,000 while Form 16 reports \u20b9900,000, a difference of \u20b915,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST001_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST001_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST004",
+    "customer_id": "CUST001",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b97,000, totaling \u20b984,000 annually under folio DEMO-MF-300029.",
+    "expected_sources": [
+      {
+        "document_id": "CUST001_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST001_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST005",
+    "customer_id": "CUST001",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500031 matures on 16-Jun-2026 with a maturity amount of \u20b9160,936.93.",
+    "expected_sources": [
+      {
+        "document_id": "CUST001_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST006",
+    "customer_id": "CUST001",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 16-Jun-2026 and auto-renewal status NO.",
+    "expected_sources": [
+      {
+        "document_id": "CUST001_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST007",
+    "customer_id": "CUST001",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Ananya Joshi (CUST002)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST008",
+    "customer_id": "CUST002",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Joshi (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST002_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST009",
+    "customer_id": "CUST002",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600086 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b912,259.27.",
+    "expected_sources": [
+      {
+        "document_id": "CUST002_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST010",
+    "customer_id": "CUST002",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,020,000 with TDS \u20b945,528.",
+    "expected_sources": [
+      {
+        "document_id": "CUST002_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST002_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST011",
+    "customer_id": "CUST002",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-300058.",
+    "expected_sources": [
+      {
+        "document_id": "CUST002_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST002_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST012",
+    "customer_id": "CUST002",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500062 matures on 10-Sep-2026 with a maturity amount of \u20b9214,899.00.",
+    "expected_sources": [
+      {
+        "document_id": "CUST002_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST013",
+    "customer_id": "CUST002",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,020,000, taxable income \u20b9656,400, TDS \u20b945,528, and monthly bank net salary credit \u20b975,906.",
+    "expected_sources": [
+      {
+        "document_id": "CUST002_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST002_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST014",
+    "customer_id": "CUST002",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST015",
+    "customer_id": "CUST003",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Rao (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST003_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST016",
+    "customer_id": "CUST003",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600129 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b914,796.44.",
+    "expected_sources": [
+      {
+        "document_id": "CUST003_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST017",
+    "customer_id": "CUST003",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,140,000 with TDS \u20b965,256.",
+    "expected_sources": [
+      {
+        "document_id": "CUST003_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST003_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST018",
+    "customer_id": "CUST003",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-300087.",
+    "expected_sources": [
+      {
+        "document_id": "CUST003_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST003_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST019",
+    "customer_id": "CUST003",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500093 matures on 10-Sep-2026 with a maturity amount of \u20b9269,019.74.",
+    "expected_sources": [
+      {
+        "document_id": "CUST003_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST020",
+    "customer_id": "CUST003",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST003_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST021",
+    "customer_id": "CUST003",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Priya Malhotra (CUST004)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST022",
+    "customer_id": "CUST004",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Malhotra (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST004_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST023",
+    "customer_id": "CUST004",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600172 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b917,362.38.",
+    "expected_sources": [
+      {
+        "document_id": "CUST004_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST024",
+    "customer_id": "CUST004",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,260,000 with TDS \u20b984,972.",
+    "expected_sources": [
+      {
+        "document_id": "CUST004_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST004_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST025",
+    "customer_id": "CUST004",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-300116.",
+    "expected_sources": [
+      {
+        "document_id": "CUST004_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST004_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST026",
+    "customer_id": "CUST004",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500124 matures on 10-Sep-2026 with a maturity amount of \u20b9323,299.39.",
+    "expected_sources": [
+      {
+        "document_id": "CUST004_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST027",
+    "customer_id": "CUST004",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,260,000, taxable income \u20b9846,000, TDS \u20b984,972, and monthly bank net salary credit \u20b991,419.",
+    "expected_sources": [
+      {
+        "document_id": "CUST004_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST004_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST028",
+    "customer_id": "CUST004",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST029",
+    "customer_id": "CUST005",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Sen (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST005_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST030",
+    "customer_id": "CUST005",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600215 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b919,501.47.",
+    "expected_sources": [
+      {
+        "document_id": "CUST005_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST031",
+    "customer_id": "CUST005",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,380,000 with TDS \u20b9104,688.",
+    "expected_sources": [
+      {
+        "document_id": "CUST005_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST005_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST032",
+    "customer_id": "CUST005",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b912,000, totaling \u20b9144,000 annually under folio DEMO-MF-300145.",
+    "expected_sources": [
+      {
+        "document_id": "CUST005_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST005_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST033",
+    "customer_id": "CUST005",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500155 matures on 10-Sep-2026 with a maturity amount of \u20b9375,519.50.",
+    "expected_sources": [
+      {
+        "document_id": "CUST005_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST034",
+    "customer_id": "CUST005",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST005_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST035",
+    "customer_id": "CUST005",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Sneha Bansal (CUST006)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST036",
+    "customer_id": "CUST006",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Bansal (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST006_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST037",
+    "customer_id": "CUST006",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600258 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b99,807.41.",
+    "expected_sources": [
+      {
+        "document_id": "CUST006_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST038",
+    "customer_id": "CUST006",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,500,000 with TDS \u20b9126,240.",
+    "expected_sources": [
+      {
+        "document_id": "CUST006_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST006_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST039",
+    "customer_id": "CUST006",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-300174.",
+    "expected_sources": [
+      {
+        "document_id": "CUST006_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST006_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST040",
+    "customer_id": "CUST006",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500186 matures on 10-Sep-2026 with a maturity amount of \u20b9429,798.01.",
+    "expected_sources": [
+      {
+        "document_id": "CUST006_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST041",
+    "customer_id": "CUST006",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,500,000, taxable income \u20b91,029,600, TDS \u20b9126,240, and monthly bank net salary credit \u20b9106,780.",
+    "expected_sources": [
+      {
+        "document_id": "CUST006_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST006_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST042",
+    "customer_id": "CUST006",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST043",
+    "customer_id": "CUST007",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Sharma (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST007_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST044",
+    "customer_id": "CUST007",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600301 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b912,330.36.",
+    "expected_sources": [
+      {
+        "document_id": "CUST007_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST045",
+    "customer_id": "CUST007",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,620,000 with TDS \u20b9158,064.",
+    "expected_sources": [
+      {
+        "document_id": "CUST007_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST007_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST046",
+    "customer_id": "CUST007",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b98,000, totaling \u20b996,000 annually under folio DEMO-MF-300203.",
+    "expected_sources": [
+      {
+        "document_id": "CUST007_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST007_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST047",
+    "customer_id": "CUST007",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500217 matures on 10-Sep-2026 with a maturity amount of \u20b9161,411.84.",
+    "expected_sources": [
+      {
+        "document_id": "CUST007_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST048",
+    "customer_id": "CUST007",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST007_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST049",
+    "customer_id": "CUST007",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Meera Iyer (CUST008)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST050",
+    "customer_id": "CUST008",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Iyer (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST008_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST051",
+    "customer_id": "CUST008",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600344 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b914,882.04.",
+    "expected_sources": [
+      {
+        "document_id": "CUST008_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST052",
+    "customer_id": "CUST008",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,740,000 with TDS \u20b9189,888.",
+    "expected_sources": [
+      {
+        "document_id": "CUST008_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST008_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST053",
+    "customer_id": "CUST008",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-300232.",
+    "expected_sources": [
+      {
+        "document_id": "CUST008_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST008_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST054",
+    "customer_id": "CUST008",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500248 matures on 10-Sep-2026 with a maturity amount of \u20b9215,532.92.",
+    "expected_sources": [
+      {
+        "document_id": "CUST008_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST055",
+    "customer_id": "CUST008",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,740,000, taxable income \u20b91,233,600, TDS \u20b9189,888, and monthly bank net salary credit \u20b9120,276.",
+    "expected_sources": [
+      {
+        "document_id": "CUST008_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST008_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST056",
+    "customer_id": "CUST008",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST057",
+    "customer_id": "CUST009",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Reddy (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST009_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST058",
+    "customer_id": "CUST009",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600387 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b917,063.78.",
+    "expected_sources": [
+      {
+        "document_id": "CUST009_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST059",
+    "customer_id": "CUST009",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,860,000 with TDS \u20b9221,712.",
+    "expected_sources": [
+      {
+        "document_id": "CUST009_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST009_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST060",
+    "customer_id": "CUST009",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b912,000, totaling \u20b9144,000 annually under folio DEMO-MF-300261.",
+    "expected_sources": [
+      {
+        "document_id": "CUST009_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST009_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST061",
+    "customer_id": "CUST009",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500279 matures on 10-Sep-2026 with a maturity amount of \u20b9268,228.21.",
+    "expected_sources": [
+      {
+        "document_id": "CUST009_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST062",
+    "customer_id": "CUST009",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST009_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST063",
+    "customer_id": "CUST009",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Divya Menon (CUST010)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST064",
+    "customer_id": "CUST010",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Menon (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST010_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST065",
+    "customer_id": "CUST010",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600430 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b919,614.83.",
+    "expected_sources": [
+      {
+        "document_id": "CUST010_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST066",
+    "customer_id": "CUST010",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,980,000 with TDS \u20b9251,664.",
+    "expected_sources": [
+      {
+        "document_id": "CUST010_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST010_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST067",
+    "customer_id": "CUST010",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-300290.",
+    "expected_sources": [
+      {
+        "document_id": "CUST010_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST010_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST068",
+    "customer_id": "CUST010",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500310 matures on 10-Sep-2026 with a maturity amount of \u20b9322,348.51.",
+    "expected_sources": [
+      {
+        "document_id": "CUST010_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST069",
+    "customer_id": "CUST010",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,980,000, taxable income \u20b91,431,600, TDS \u20b9251,664, and monthly bank net salary credit \u20b9133,928.",
+    "expected_sources": [
+      {
+        "document_id": "CUST010_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST010_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST070",
+    "customer_id": "CUST010",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST071",
+    "customer_id": "CUST011",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Bhat (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST011_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST072",
+    "customer_id": "CUST011",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600473 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b99,864.29.",
+    "expected_sources": [
+      {
+        "document_id": "CUST011_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST073",
+    "customer_id": "CUST011",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b92,100,000 with TDS \u20b9283,488.",
+    "expected_sources": [
+      {
+        "document_id": "CUST011_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST011_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST074",
+    "customer_id": "CUST011",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b98,000, totaling \u20b996,000 annually under folio DEMO-MF-300319.",
+    "expected_sources": [
+      {
+        "document_id": "CUST011_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST011_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST075",
+    "customer_id": "CUST011",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500341 matures on 10-Sep-2026 with a maturity amount of \u20b9376,627.63.",
+    "expected_sources": [
+      {
+        "document_id": "CUST011_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST076",
+    "customer_id": "CUST011",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST011_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST077",
+    "customer_id": "CUST011",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Kavya Banerjee (CUST012)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST078",
+    "customer_id": "CUST012",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Banerjee (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST012_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST079",
+    "customer_id": "CUST012",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600516 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b912,401.70.",
+    "expected_sources": [
+      {
+        "document_id": "CUST012_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST080",
+    "customer_id": "CUST012",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b92,220,000 with TDS \u20b9315,312.",
+    "expected_sources": [
+      {
+        "document_id": "CUST012_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST012_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST081",
+    "customer_id": "CUST012",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-300348.",
+    "expected_sources": [
+      {
+        "document_id": "CUST012_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST012_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST082",
+    "customer_id": "CUST012",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500372 matures on 10-Sep-2026 with a maturity amount of \u20b9431,065.85.",
+    "expected_sources": [
+      {
+        "document_id": "CUST012_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST083",
+    "customer_id": "CUST012",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b92,220,000, taxable income \u20b91,635,600, TDS \u20b9315,312, and monthly bank net salary credit \u20b9147,424.",
+    "expected_sources": [
+      {
+        "document_id": "CUST012_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST012_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST084",
+    "customer_id": "CUST012",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST085",
+    "customer_id": "CUST013",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. MetroCivic Co-operative Bank Ltd. (DEMO) (DEMO-SB-772743) appears in ais_report.pdf (Page 2) with \u20b93,600.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST013_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST013_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST086",
+    "customer_id": "CUST013",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600559 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b914,626.10.",
+    "expected_sources": [
+      {
+        "document_id": "CUST013_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST087",
+    "customer_id": "CUST013",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b9900,000 with TDS \u20b927,060.",
+    "expected_sources": [
+      {
+        "document_id": "CUST013_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST013_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST088",
+    "customer_id": "CUST013",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-300377.",
+    "expected_sources": [
+      {
+        "document_id": "CUST013_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST013_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST089",
+    "customer_id": "CUST013",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500403 matures on 10-Sep-2026 with a maturity amount of \u20b9160,936.93.",
+    "expected_sources": [
+      {
+        "document_id": "CUST013_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST090",
+    "customer_id": "CUST013",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST013_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST091",
+    "customer_id": "CUST013",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Neha Shetty (CUST014)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST092",
+    "customer_id": "CUST014",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee information is not recorded in insurance_policy_01.pdf (Page 2).",
+    "expected_sources": [
+      {
+        "document_id": "CUST014_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST093",
+    "customer_id": "CUST014",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600602 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b917,162.98.",
+    "expected_sources": [
+      {
+        "document_id": "CUST014_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST094",
+    "customer_id": "CUST014",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,020,000 with TDS \u20b945,528.",
+    "expected_sources": [
+      {
+        "document_id": "CUST014_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST014_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST095",
+    "customer_id": "CUST014",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-300406.",
+    "expected_sources": [
+      {
+        "document_id": "CUST014_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST014_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST096",
+    "customer_id": "CUST014",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500434 matures on 10-Sep-2026 with a maturity amount of \u20b9214,899.00.",
+    "expected_sources": [
+      {
+        "document_id": "CUST014_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST097",
+    "customer_id": "CUST014",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,020,000, taxable income \u20b9656,400, TDS \u20b945,528, and monthly bank net salary credit \u20b975,906.",
+    "expected_sources": [
+      {
+        "document_id": "CUST014_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST014_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST098",
+    "customer_id": "CUST014",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST099",
+    "customer_id": "CUST015",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Sinha (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST015_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST100",
+    "customer_id": "CUST015",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600645 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b919,728.58.",
+    "expected_sources": [
+      {
+        "document_id": "CUST015_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST101",
+    "customer_id": "CUST015",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,140,000 with TDS \u20b965,256.",
+    "expected_sources": [
+      {
+        "document_id": "CUST015_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST015_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST102",
+    "customer_id": "CUST015",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b913,000, totaling \u20b9156,000 annually under folio DEMO-MF-300435.",
+    "expected_sources": [
+      {
+        "document_id": "CUST015_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST015_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST103",
+    "customer_id": "CUST015",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500465 matures on 30-Jun-2026 with a maturity amount of \u20b9269,019.74.",
+    "expected_sources": [
+      {
+        "document_id": "CUST015_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST104",
+    "customer_id": "CUST015",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 30-Jun-2026 and auto-renewal status NO.",
+    "expected_sources": [
+      {
+        "document_id": "CUST015_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST105",
+    "customer_id": "CUST015",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Pooja Nair (CUST016)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST106",
+    "customer_id": "CUST016",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Nair (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST016_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST107",
+    "customer_id": "CUST016",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600688 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b99,921.36.",
+    "expected_sources": [
+      {
+        "document_id": "CUST016_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST108",
+    "customer_id": "CUST016",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,260,000 with TDS \u20b984,972.",
+    "expected_sources": [
+      {
+        "document_id": "CUST016_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST016_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST109",
+    "customer_id": "CUST016",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b97,000, totaling \u20b984,000 annually under folio DEMO-MF-300464.",
+    "expected_sources": [
+      {
+        "document_id": "CUST016_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST016_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST110",
+    "customer_id": "CUST016",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500496 matures on 10-Sep-2026 with a maturity amount of \u20b9323,299.39.",
+    "expected_sources": [
+      {
+        "document_id": "CUST016_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST111",
+    "customer_id": "CUST016",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,260,000, taxable income \u20b9846,000, TDS \u20b984,972, and monthly bank net salary credit \u20b991,419.",
+    "expected_sources": [
+      {
+        "document_id": "CUST016_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST016_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST112",
+    "customer_id": "CUST016",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST113",
+    "customer_id": "CUST017",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Kulkarni (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST017_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST114",
+    "customer_id": "CUST017",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600731 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b912,188.42.",
+    "expected_sources": [
+      {
+        "document_id": "CUST017_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST115",
+    "customer_id": "CUST017",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b91,398,000 while Form 16 reports \u20b91,380,000, a difference of \u20b918,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST017_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST017_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST116",
+    "customer_id": "CUST017",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-300493.",
+    "expected_sources": [
+      {
+        "document_id": "CUST017_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST017_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST117",
+    "customer_id": "CUST017",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500527 matures on 10-Sep-2026 with a maturity amount of \u20b9375,519.50.",
+    "expected_sources": [
+      {
+        "document_id": "CUST017_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST118",
+    "customer_id": "CUST017",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST017_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST119",
+    "customer_id": "CUST017",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Riya Gupta (CUST018)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST120",
+    "customer_id": "CUST018",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Gupta (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST018_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST121",
+    "customer_id": "CUST018",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600774 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b914,711.12.",
+    "expected_sources": [
+      {
+        "document_id": "CUST018_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST122",
+    "customer_id": "CUST018",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,500,000 with TDS \u20b9126,240.",
+    "expected_sources": [
+      {
+        "document_id": "CUST018_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST018_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST123",
+    "customer_id": "CUST018",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-300522.",
+    "expected_sources": [
+      {
+        "document_id": "CUST018_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST018_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST124",
+    "customer_id": "CUST018",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500558 matures on 10-Sep-2026 with a maturity amount of \u20b9429,798.01.",
+    "expected_sources": [
+      {
+        "document_id": "CUST018_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST125",
+    "customer_id": "CUST018",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,500,000, taxable income \u20b91,029,600, TDS \u20b9126,240, and monthly bank net salary credit \u20b9106,780.",
+    "expected_sources": [
+      {
+        "document_id": "CUST018_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST018_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST126",
+    "customer_id": "CUST018",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST127",
+    "customer_id": "CUST019",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. MetroCivic Co-operative Bank Ltd. (DEMO) (DEMO-SB-774009) appears in ais_report.pdf (Page 2) with \u20b93,600.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST019_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST019_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST128",
+    "customer_id": "CUST019",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600817 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b917,262.51.",
+    "expected_sources": [
+      {
+        "document_id": "CUST019_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST129",
+    "customer_id": "CUST019",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,620,000 with TDS \u20b9158,064.",
+    "expected_sources": [
+      {
+        "document_id": "CUST019_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST019_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST130",
+    "customer_id": "CUST019",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-300551.",
+    "expected_sources": [
+      {
+        "document_id": "CUST019_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST019_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST131",
+    "customer_id": "CUST019",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500589 matures on 10-Sep-2026 with a maturity amount of \u20b9161,411.84.",
+    "expected_sources": [
+      {
+        "document_id": "CUST019_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST132",
+    "customer_id": "CUST019",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST019_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST133",
+    "customer_id": "CUST019",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Shreya Chatterjee (CUST020)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST134",
+    "customer_id": "CUST020",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee information is not recorded in insurance_policy_01.pdf (Page 2).",
+    "expected_sources": [
+      {
+        "document_id": "CUST020_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST135",
+    "customer_id": "CUST020",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600860 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b919,842.72.",
+    "expected_sources": [
+      {
+        "document_id": "CUST020_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST136",
+    "customer_id": "CUST020",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,740,000 with TDS \u20b9189,888.",
+    "expected_sources": [
+      {
+        "document_id": "CUST020_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST020_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST137",
+    "customer_id": "CUST020",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b912,000, totaling \u20b9144,000 annually under folio DEMO-MF-300580.",
+    "expected_sources": [
+      {
+        "document_id": "CUST020_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST020_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST138",
+    "customer_id": "CUST020",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500620 matures on 10-Sep-2026 with a maturity amount of \u20b9215,532.92.",
+    "expected_sources": [
+      {
+        "document_id": "CUST020_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST139",
+    "customer_id": "CUST020",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,740,000, taxable income \u20b91,233,600, TDS \u20b9189,888, and monthly bank net salary credit \u20b9120,276.",
+    "expected_sources": [
+      {
+        "document_id": "CUST020_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST020_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST140",
+    "customer_id": "CUST020",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST141",
+    "customer_id": "CUST021",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Kapoor (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST021_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST142",
+    "customer_id": "CUST021",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600903 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b99,750.73.",
+    "expected_sources": [
+      {
+        "document_id": "CUST021_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST143",
+    "customer_id": "CUST021",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,860,000 with TDS \u20b9221,712.",
+    "expected_sources": [
+      {
+        "document_id": "CUST021_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST021_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST144",
+    "customer_id": "CUST021",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-300609.",
+    "expected_sources": [
+      {
+        "document_id": "CUST021_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST021_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST145",
+    "customer_id": "CUST021",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500651 matures on 06-Jul-2026 with a maturity amount of \u20b9268,228.21.",
+    "expected_sources": [
+      {
+        "document_id": "CUST021_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST146",
+    "customer_id": "CUST021",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 06-Jul-2026 and auto-renewal status NO.",
+    "expected_sources": [
+      {
+        "document_id": "CUST021_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST147",
+    "customer_id": "CUST021",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Ishita Pillai (CUST022)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST148",
+    "customer_id": "CUST022",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Pillai (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST022_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST149",
+    "customer_id": "CUST022",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600946 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b912,259.27.",
+    "expected_sources": [
+      {
+        "document_id": "CUST022_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST150",
+    "customer_id": "CUST022",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,980,000 with TDS \u20b9251,664.",
+    "expected_sources": [
+      {
+        "document_id": "CUST022_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST022_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST151",
+    "customer_id": "CUST022",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b98,000, totaling \u20b996,000 annually under folio DEMO-MF-300638.",
+    "expected_sources": [
+      {
+        "document_id": "CUST022_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST022_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST152",
+    "customer_id": "CUST022",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500682 matures on 10-Sep-2026 with a maturity amount of \u20b9322,348.51.",
+    "expected_sources": [
+      {
+        "document_id": "CUST022_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST153",
+    "customer_id": "CUST022",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,980,000, taxable income \u20b91,431,600, TDS \u20b9251,664, and monthly bank net salary credit \u20b9133,928.",
+    "expected_sources": [
+      {
+        "document_id": "CUST022_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST022_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST154",
+    "customer_id": "CUST022",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST155",
+    "customer_id": "CUST023",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Chopra (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST023_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST156",
+    "customer_id": "CUST023",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-600989 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b914,796.44.",
+    "expected_sources": [
+      {
+        "document_id": "CUST023_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST157",
+    "customer_id": "CUST023",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b92,121,000 while Form 16 reports \u20b92,100,000, a difference of \u20b921,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST023_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST023_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST158",
+    "customer_id": "CUST023",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-300667.",
+    "expected_sources": [
+      {
+        "document_id": "CUST023_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST023_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST159",
+    "customer_id": "CUST023",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500713 matures on 10-Sep-2026 with a maturity amount of \u20b9376,627.63.",
+    "expected_sources": [
+      {
+        "document_id": "CUST023_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST160",
+    "customer_id": "CUST023",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST023_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST161",
+    "customer_id": "CUST023",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Tanvi Verma (CUST024)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST162",
+    "customer_id": "CUST024",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Verma (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST024_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST163",
+    "customer_id": "CUST024",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601032 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b917,362.38.",
+    "expected_sources": [
+      {
+        "document_id": "CUST024_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST164",
+    "customer_id": "CUST024",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b92,220,000 with TDS \u20b9315,312.",
+    "expected_sources": [
+      {
+        "document_id": "CUST024_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST024_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST165",
+    "customer_id": "CUST024",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b912,000, totaling \u20b9144,000 annually under folio DEMO-MF-300696.",
+    "expected_sources": [
+      {
+        "document_id": "CUST024_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST024_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST166",
+    "customer_id": "CUST024",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500744 matures on 10-Sep-2026 with a maturity amount of \u20b9431,065.85.",
+    "expected_sources": [
+      {
+        "document_id": "CUST024_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST167",
+    "customer_id": "CUST024",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b92,220,000, taxable income \u20b91,635,600, TDS \u20b9315,312, and monthly bank net salary credit \u20b9147,424.",
+    "expected_sources": [
+      {
+        "document_id": "CUST024_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST024_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST168",
+    "customer_id": "CUST024",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST169",
+    "customer_id": "CUST025",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. MetroCivic Co-operative Bank Ltd. (DEMO) (DEMO-SB-775275) appears in ais_report.pdf (Page 2) with \u20b93,600.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST025_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST025_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST170",
+    "customer_id": "CUST025",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601075 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b919,501.47.",
+    "expected_sources": [
+      {
+        "document_id": "CUST025_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST171",
+    "customer_id": "CUST025",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b9900,000 with TDS \u20b927,060.",
+    "expected_sources": [
+      {
+        "document_id": "CUST025_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST025_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST172",
+    "customer_id": "CUST025",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-300725.",
+    "expected_sources": [
+      {
+        "document_id": "CUST025_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST025_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST173",
+    "customer_id": "CUST025",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500775 matures on 10-Sep-2026 with a maturity amount of \u20b9160,936.93.",
+    "expected_sources": [
+      {
+        "document_id": "CUST025_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST174",
+    "customer_id": "CUST025",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST025_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST175",
+    "customer_id": "CUST025",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Nandini Deshmukh (CUST026)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST176",
+    "customer_id": "CUST026",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee information is not recorded in insurance_policy_01.pdf (Page 2).",
+    "expected_sources": [
+      {
+        "document_id": "CUST026_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST177",
+    "customer_id": "CUST026",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601118 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b99,807.41.",
+    "expected_sources": [
+      {
+        "document_id": "CUST026_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST178",
+    "customer_id": "CUST026",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,020,000 with TDS \u20b946,992.",
+    "expected_sources": [
+      {
+        "document_id": "CUST026_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST026_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST179",
+    "customer_id": "CUST026",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b98,000, totaling \u20b996,000 annually under folio DEMO-MF-300754.",
+    "expected_sources": [
+      {
+        "document_id": "CUST026_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST026_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST180",
+    "customer_id": "CUST026",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500806 matures on 10-Sep-2026 with a maturity amount of \u20b9214,899.00.",
+    "expected_sources": [
+      {
+        "document_id": "CUST026_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST181",
+    "customer_id": "CUST026",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,020,000, taxable income \u20b9663,400, TDS \u20b946,992, and monthly bank net salary credit \u20b975,784.",
+    "expected_sources": [
+      {
+        "document_id": "CUST026_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST026_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST182",
+    "customer_id": "CUST026",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST183",
+    "customer_id": "CUST027",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. NavaKarnataka Co-op Bank Ltd. (DEMO) (DEMO-SB-775697) appears in ais_report.pdf (Page 2) with \u20b94,500.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST027_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST027_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST184",
+    "customer_id": "CUST027",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601161 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b912,330.36.",
+    "expected_sources": [
+      {
+        "document_id": "CUST027_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST185",
+    "customer_id": "CUST027",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,140,000 with TDS \u20b966,708.",
+    "expected_sources": [
+      {
+        "document_id": "CUST027_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST027_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST186",
+    "customer_id": "CUST027",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-300783.",
+    "expected_sources": [
+      {
+        "document_id": "CUST027_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST027_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST187",
+    "customer_id": "CUST027",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500837 matures on 10-Sep-2026 with a maturity amount of \u20b9269,019.74.",
+    "expected_sources": [
+      {
+        "document_id": "CUST027_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST188",
+    "customer_id": "CUST027",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST027_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST189",
+    "customer_id": "CUST027",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Aishwarya Rao (CUST028)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST190",
+    "customer_id": "CUST028",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Rao (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST028_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST191",
+    "customer_id": "CUST028",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601204 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b914,882.04.",
+    "expected_sources": [
+      {
+        "document_id": "CUST028_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST192",
+    "customer_id": "CUST028",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,260,000 with TDS \u20b986,424.",
+    "expected_sources": [
+      {
+        "document_id": "CUST028_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST028_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST193",
+    "customer_id": "CUST028",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-300812.",
+    "expected_sources": [
+      {
+        "document_id": "CUST028_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST028_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST194",
+    "customer_id": "CUST028",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500868 matures on 18-Jun-2026 with a maturity amount of \u20b9323,299.39.",
+    "expected_sources": [
+      {
+        "document_id": "CUST028_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST195",
+    "customer_id": "CUST028",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,260,000, taxable income \u20b9853,000, TDS \u20b986,424, and monthly bank net salary credit \u20b991,298.",
+    "expected_sources": [
+      {
+        "document_id": "CUST028_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST028_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST196",
+    "customer_id": "CUST028",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST197",
+    "customer_id": "CUST029",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. Coastal Urban Co-op Bank Ltd. (DEMO) (DEMO-SB-776119) appears in ais_report.pdf (Page 2) with \u20b95,400.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST029_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST029_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST198",
+    "customer_id": "CUST029",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601247 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b917,063.78.",
+    "expected_sources": [
+      {
+        "document_id": "CUST029_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST199",
+    "customer_id": "CUST029",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b91,404,000 while Form 16 reports \u20b91,380,000, a difference of \u20b924,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST029_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST029_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST200",
+    "customer_id": "CUST029",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-300841.",
+    "expected_sources": [
+      {
+        "document_id": "CUST029_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST029_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST201",
+    "customer_id": "CUST029",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500899 matures on 10-Sep-2026 with a maturity amount of \u20b9375,519.50.",
+    "expected_sources": [
+      {
+        "document_id": "CUST029_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST202",
+    "customer_id": "CUST029",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST029_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST203",
+    "customer_id": "CUST029",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Swati Sen (CUST030)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST204",
+    "customer_id": "CUST030",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Sen (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST030_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST205",
+    "customer_id": "CUST030",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601290 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b919,614.83.",
+    "expected_sources": [
+      {
+        "document_id": "CUST030_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST206",
+    "customer_id": "CUST030",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,500,000 with TDS \u20b9128,424.",
+    "expected_sources": [
+      {
+        "document_id": "CUST030_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST030_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST207",
+    "customer_id": "CUST030",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b913,000, totaling \u20b9156,000 annually under folio DEMO-MF-300870.",
+    "expected_sources": [
+      {
+        "document_id": "CUST030_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST030_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST208",
+    "customer_id": "CUST030",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500930 matures on 20-Jun-2026 with a maturity amount of \u20b9429,798.01.",
+    "expected_sources": [
+      {
+        "document_id": "CUST030_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST209",
+    "customer_id": "CUST030",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,500,000, taxable income \u20b91,036,600, TDS \u20b9128,424, and monthly bank net salary credit \u20b9106,598.",
+    "expected_sources": [
+      {
+        "document_id": "CUST030_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST030_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST210",
+    "customer_id": "CUST030",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST211",
+    "customer_id": "CUST031",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. MetroCivic Co-operative Bank Ltd. (DEMO) (DEMO-SB-776541) appears in ais_report.pdf (Page 2) with \u20b93,600.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST031_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST031_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST212",
+    "customer_id": "CUST031",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601333 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b99,864.29.",
+    "expected_sources": [
+      {
+        "document_id": "CUST031_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST213",
+    "customer_id": "CUST031",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,620,000 with TDS \u20b9160,248.",
+    "expected_sources": [
+      {
+        "document_id": "CUST031_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST031_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST214",
+    "customer_id": "CUST031",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b97,000, totaling \u20b984,000 annually under folio DEMO-MF-300899.",
+    "expected_sources": [
+      {
+        "document_id": "CUST031_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST031_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST215",
+    "customer_id": "CUST031",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500961 matures on 10-Sep-2026 with a maturity amount of \u20b9161,411.84.",
+    "expected_sources": [
+      {
+        "document_id": "CUST031_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST216",
+    "customer_id": "CUST031",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST031_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST217",
+    "customer_id": "CUST031",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Aditi Sharma (CUST032)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST218",
+    "customer_id": "CUST032",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Sharma (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST032_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST219",
+    "customer_id": "CUST032",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601376 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b912,401.70.",
+    "expected_sources": [
+      {
+        "document_id": "CUST032_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST220",
+    "customer_id": "CUST032",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b91,758,000 while Form 16 reports \u20b91,740,000, a difference of \u20b918,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST032_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST032_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST221",
+    "customer_id": "CUST032",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-300928.",
+    "expected_sources": [
+      {
+        "document_id": "CUST032_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST032_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST222",
+    "customer_id": "CUST032",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-500992 matures on 22-Jun-2026 with a maturity amount of \u20b9215,532.92.",
+    "expected_sources": [
+      {
+        "document_id": "CUST032_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST223",
+    "customer_id": "CUST032",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,740,000, taxable income \u20b91,240,600, TDS \u20b9192,072, and monthly bank net salary credit \u20b9120,094.",
+    "expected_sources": [
+      {
+        "document_id": "CUST032_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST032_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST224",
+    "customer_id": "CUST032",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST225",
+    "customer_id": "CUST033",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. NavaKarnataka Co-op Bank Ltd. (DEMO) (DEMO-SB-776963) appears in ais_report.pdf (Page 2) with \u20b94,500.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST033_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST033_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST226",
+    "customer_id": "CUST033",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601419 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b914,626.10.",
+    "expected_sources": [
+      {
+        "document_id": "CUST033_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST227",
+    "customer_id": "CUST033",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,860,000 with TDS \u20b9223,896.",
+    "expected_sources": [
+      {
+        "document_id": "CUST033_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST033_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST228",
+    "customer_id": "CUST033",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-300957.",
+    "expected_sources": [
+      {
+        "document_id": "CUST033_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST033_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST229",
+    "customer_id": "CUST033",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501023 matures on 10-Sep-2026 with a maturity amount of \u20b9268,228.21.",
+    "expected_sources": [
+      {
+        "document_id": "CUST033_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST230",
+    "customer_id": "CUST033",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST033_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST231",
+    "customer_id": "CUST033",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Lakshmi Reddy (CUST034)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST232",
+    "customer_id": "CUST034",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Reddy (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST034_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST233",
+    "customer_id": "CUST034",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601462 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b917,162.98.",
+    "expected_sources": [
+      {
+        "document_id": "CUST034_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST234",
+    "customer_id": "CUST034",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,980,000 with TDS \u20b9253,848.",
+    "expected_sources": [
+      {
+        "document_id": "CUST034_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST034_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST235",
+    "customer_id": "CUST034",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-300986.",
+    "expected_sources": [
+      {
+        "document_id": "CUST034_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST034_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST236",
+    "customer_id": "CUST034",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501054 matures on 24-Jun-2026 with a maturity amount of \u20b9322,348.51.",
+    "expected_sources": [
+      {
+        "document_id": "CUST034_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST237",
+    "customer_id": "CUST034",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,980,000, taxable income \u20b91,438,600, TDS \u20b9253,848, and monthly bank net salary credit \u20b9133,746.",
+    "expected_sources": [
+      {
+        "document_id": "CUST034_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST034_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST238",
+    "customer_id": "CUST034",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST239",
+    "customer_id": "CUST035",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. Coastal Urban Co-op Bank Ltd. (DEMO) (DEMO-SB-777385) appears in ais_report.pdf (Page 2) with \u20b95,400.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST035_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST035_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST240",
+    "customer_id": "CUST035",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601505 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b919,728.58.",
+    "expected_sources": [
+      {
+        "document_id": "CUST035_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST241",
+    "customer_id": "CUST035",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b92,127,000 while Form 16 reports \u20b92,100,000, a difference of \u20b927,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST035_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST035_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST242",
+    "customer_id": "CUST035",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b912,000, totaling \u20b9144,000 annually under folio DEMO-MF-301015.",
+    "expected_sources": [
+      {
+        "document_id": "CUST035_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST035_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST243",
+    "customer_id": "CUST035",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501085 matures on 10-Sep-2026 with a maturity amount of \u20b9376,627.63.",
+    "expected_sources": [
+      {
+        "document_id": "CUST035_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST244",
+    "customer_id": "CUST035",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST035_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST245",
+    "customer_id": "CUST035",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Bhavna Bhat (CUST036)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST246",
+    "customer_id": "CUST036",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Bhat (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST036_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST247",
+    "customer_id": "CUST036",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601548 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b99,921.36.",
+    "expected_sources": [
+      {
+        "document_id": "CUST036_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST248",
+    "customer_id": "CUST036",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b92,220,000 with TDS \u20b9317,496.",
+    "expected_sources": [
+      {
+        "document_id": "CUST036_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST036_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST249",
+    "customer_id": "CUST036",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-301044.",
+    "expected_sources": [
+      {
+        "document_id": "CUST036_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST036_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST250",
+    "customer_id": "CUST036",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501116 matures on 26-Jun-2026 with a maturity amount of \u20b9431,065.85.",
+    "expected_sources": [
+      {
+        "document_id": "CUST036_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST251",
+    "customer_id": "CUST036",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b92,220,000, taxable income \u20b91,642,600, TDS \u20b9317,496, and monthly bank net salary credit \u20b9147,242.",
+    "expected_sources": [
+      {
+        "document_id": "CUST036_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST036_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST252",
+    "customer_id": "CUST036",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST253",
+    "customer_id": "CUST037",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. MetroCivic Co-operative Bank Ltd. (DEMO) (DEMO-SB-777807) appears in ais_report.pdf (Page 2) with \u20b93,600.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST037_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST037_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST254",
+    "customer_id": "CUST037",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601591 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b912,188.42.",
+    "expected_sources": [
+      {
+        "document_id": "CUST037_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST255",
+    "customer_id": "CUST037",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b9900,000 with TDS \u20b928,512.",
+    "expected_sources": [
+      {
+        "document_id": "CUST037_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST037_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST256",
+    "customer_id": "CUST037",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b98,000, totaling \u20b996,000 annually under folio DEMO-MF-301073.",
+    "expected_sources": [
+      {
+        "document_id": "CUST037_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST037_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST257",
+    "customer_id": "CUST037",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501147 matures on 10-Sep-2026 with a maturity amount of \u20b9160,936.93.",
+    "expected_sources": [
+      {
+        "document_id": "CUST037_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST258",
+    "customer_id": "CUST037",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST037_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST259",
+    "customer_id": "CUST037",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Kritika Mehta (CUST038)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST260",
+    "customer_id": "CUST038",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Mehta (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST038_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST261",
+    "customer_id": "CUST038",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601634 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b914,711.12.",
+    "expected_sources": [
+      {
+        "document_id": "CUST038_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST262",
+    "customer_id": "CUST038",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b91,041,000 while Form 16 reports \u20b91,020,000, a difference of \u20b921,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST038_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST038_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST263",
+    "customer_id": "CUST038",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-301102.",
+    "expected_sources": [
+      {
+        "document_id": "CUST038_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST038_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST264",
+    "customer_id": "CUST038",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501178 matures on 28-Jun-2026 with a maturity amount of \u20b9214,899.00.",
+    "expected_sources": [
+      {
+        "document_id": "CUST038_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST265",
+    "customer_id": "CUST038",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,020,000, taxable income \u20b9663,400, TDS \u20b946,992, and monthly bank net salary credit \u20b975,784.",
+    "expected_sources": [
+      {
+        "document_id": "CUST038_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST038_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST266",
+    "customer_id": "CUST038",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST267",
+    "customer_id": "CUST039",
+    "category": "missing_information_detection",
+    "question": "Do I have any bank accounts not represented in my uploaded statements?",
+    "expected_answer": "Yes. NavaKarnataka Co-op Bank Ltd. (DEMO) (DEMO-SB-778229) appears in ais_report.pdf (Page 2) with \u20b94,500.00 interest but is absent from your uploaded bank statements.",
+    "expected_sources": [
+      {
+        "document_id": "CUST039_ais_report",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST039_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST268",
+    "customer_id": "CUST039",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601677 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b917,262.51.",
+    "expected_sources": [
+      {
+        "document_id": "CUST039_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST269",
+    "customer_id": "CUST039",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,140,000 with TDS \u20b966,708.",
+    "expected_sources": [
+      {
+        "document_id": "CUST039_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST039_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST270",
+    "customer_id": "CUST039",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b912,000, totaling \u20b9144,000 annually under folio DEMO-MF-301131.",
+    "expected_sources": [
+      {
+        "document_id": "CUST039_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST039_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST271",
+    "customer_id": "CUST039",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501209 matures on 10-Sep-2026 with a maturity amount of \u20b9269,019.74.",
+    "expected_sources": [
+      {
+        "document_id": "CUST039_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST272",
+    "customer_id": "CUST039",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST039_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST273",
+    "customer_id": "CUST039",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Pallavi Sinha (CUST040)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST274",
+    "customer_id": "CUST040",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Kavita Sinha (Spouse) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST040_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST275",
+    "customer_id": "CUST040",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601720 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b919,842.72.",
+    "expected_sources": [
+      {
+        "document_id": "CUST040_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST276",
+    "customer_id": "CUST040",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,260,000 with TDS \u20b986,424.",
+    "expected_sources": [
+      {
+        "document_id": "CUST040_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST040_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST277",
+    "customer_id": "CUST040",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-301160.",
+    "expected_sources": [
+      {
+        "document_id": "CUST040_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST040_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST278",
+    "customer_id": "CUST040",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501240 matures on 30-Jun-2026 with a maturity amount of \u20b9323,299.39.",
+    "expected_sources": [
+      {
+        "document_id": "CUST040_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST279",
+    "customer_id": "CUST040",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,260,000, taxable income \u20b9853,000, TDS \u20b986,424, and monthly bank net salary credit \u20b991,298.",
+    "expected_sources": [
+      {
+        "document_id": "CUST040_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST040_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST280",
+    "customer_id": "CUST040",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST281",
+    "customer_id": "CUST041",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Meenakshi Nair (Mother - Minor/Outdated Address) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST041_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST282",
+    "customer_id": "CUST041",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601763 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b99,750.73.",
+    "expected_sources": [
+      {
+        "document_id": "CUST041_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST283",
+    "customer_id": "CUST041",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b91,395,000 while Form 16 reports \u20b91,380,000, a difference of \u20b915,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST041_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST041_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST284",
+    "customer_id": "CUST041",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b98,000, totaling \u20b996,000 annually under folio DEMO-MF-301189.",
+    "expected_sources": [
+      {
+        "document_id": "CUST041_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST041_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST285",
+    "customer_id": "CUST041",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501271 matures on 10-Sep-2026 with a maturity amount of \u20b9375,519.50.",
+    "expected_sources": [
+      {
+        "document_id": "CUST041_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST286",
+    "customer_id": "CUST041",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST041_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST287",
+    "customer_id": "CUST041",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Simran Kulkarni (CUST042)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST288",
+    "customer_id": "CUST042",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Meenakshi Kulkarni (Mother - Minor/Outdated Address) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST042_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST289",
+    "customer_id": "CUST042",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601806 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b912,259.27.",
+    "expected_sources": [
+      {
+        "document_id": "CUST042_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST290",
+    "customer_id": "CUST042",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b91,518,000 while Form 16 reports \u20b91,500,000, a difference of \u20b918,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST042_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST042_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST291",
+    "customer_id": "CUST042",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-301218.",
+    "expected_sources": [
+      {
+        "document_id": "CUST042_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST042_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST292",
+    "customer_id": "CUST042",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501302 matures on 10-Sep-2026 with a maturity amount of \u20b9429,798.01.",
+    "expected_sources": [
+      {
+        "document_id": "CUST042_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST293",
+    "customer_id": "CUST042",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,500,000, taxable income \u20b91,036,600, TDS \u20b9128,424, and monthly bank net salary credit \u20b9106,598.",
+    "expected_sources": [
+      {
+        "document_id": "CUST042_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST042_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST294",
+    "customer_id": "CUST042",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST295",
+    "customer_id": "CUST043",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Meenakshi Gupta (Mother - Minor/Outdated Address) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST043_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST296",
+    "customer_id": "CUST043",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601849 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b914,796.44.",
+    "expected_sources": [
+      {
+        "document_id": "CUST043_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST297",
+    "customer_id": "CUST043",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b91,641,000 while Form 16 reports \u20b91,620,000, a difference of \u20b921,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST043_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST043_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST298",
+    "customer_id": "CUST043",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-301247.",
+    "expected_sources": [
+      {
+        "document_id": "CUST043_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST043_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST299",
+    "customer_id": "CUST043",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501333 matures on 10-Sep-2026 with a maturity amount of \u20b9161,411.84.",
+    "expected_sources": [
+      {
+        "document_id": "CUST043_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST300",
+    "customer_id": "CUST043",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST043_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST301",
+    "customer_id": "CUST043",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Sonal Agarwal (CUST044)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST302",
+    "customer_id": "CUST044",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Meenakshi Agarwal (Mother - Minor/Outdated Address) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST044_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST303",
+    "customer_id": "CUST044",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601892 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b917,362.38.",
+    "expected_sources": [
+      {
+        "document_id": "CUST044_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST304",
+    "customer_id": "CUST044",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b91,764,000 while Form 16 reports \u20b91,740,000, a difference of \u20b924,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST044_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST044_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST305",
+    "customer_id": "CUST044",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-301276.",
+    "expected_sources": [
+      {
+        "document_id": "CUST044_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST044_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST306",
+    "customer_id": "CUST044",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501364 matures on 10-Sep-2026 with a maturity amount of \u20b9215,532.92.",
+    "expected_sources": [
+      {
+        "document_id": "CUST044_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST307",
+    "customer_id": "CUST044",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,740,000, taxable income \u20b91,240,600, TDS \u20b9192,072, and monthly bank net salary credit \u20b9120,094.",
+    "expected_sources": [
+      {
+        "document_id": "CUST044_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST044_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST308",
+    "customer_id": "CUST044",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST309",
+    "customer_id": "CUST045",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee Meenakshi Chatterjee (Mother - Minor/Outdated Address) is recorded on Page 2 of insurance_policy_01.pdf.",
+    "expected_sources": [
+      {
+        "document_id": "CUST045_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST310",
+    "customer_id": "CUST045",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601935 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b919,501.47.",
+    "expected_sources": [
+      {
+        "document_id": "CUST045_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST311",
+    "customer_id": "CUST045",
+    "category": "contradiction_detection",
+    "question": "Is there any discrepancy between my AIS salary and Form 16 gross salary?",
+    "expected_answer": "Yes. AIS reports \u20b91,887,000 while Form 16 reports \u20b91,860,000, a difference of \u20b927,000 requiring reconciliation.",
+    "expected_sources": [
+      {
+        "document_id": "CUST045_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST045_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST312",
+    "customer_id": "CUST045",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b913,000, totaling \u20b9156,000 annually under folio DEMO-MF-301305.",
+    "expected_sources": [
+      {
+        "document_id": "CUST045_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST045_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST313",
+    "customer_id": "CUST045",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501395 matures on 10-Sep-2026 with a maturity amount of \u20b9268,228.21.",
+    "expected_sources": [
+      {
+        "document_id": "CUST045_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST314",
+    "customer_id": "CUST045",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 10-Sep-2026 and auto-renewal status YES.",
+    "expected_sources": [
+      {
+        "document_id": "CUST045_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST315",
+    "customer_id": "CUST045",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Preeti Kapoor (CUST046)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST316",
+    "customer_id": "CUST046",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee information is not recorded in insurance_policy_01.pdf (Page 2).",
+    "expected_sources": [
+      {
+        "document_id": "CUST046_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST317",
+    "customer_id": "CUST046",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-601978 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b99,807.41.",
+    "expected_sources": [
+      {
+        "document_id": "CUST046_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST318",
+    "customer_id": "CUST046",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,980,000 with TDS \u20b9253,848.",
+    "expected_sources": [
+      {
+        "document_id": "CUST046_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST046_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST319",
+    "customer_id": "CUST046",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b97,000, totaling \u20b984,000 annually under folio DEMO-MF-301334.",
+    "expected_sources": [
+      {
+        "document_id": "CUST046_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST046_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST320",
+    "customer_id": "CUST046",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501426 matures on 15-Nov-2025 with a maturity amount of \u20b9322,348.51.",
+    "expected_sources": [
+      {
+        "document_id": "CUST046_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST321",
+    "customer_id": "CUST046",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,980,000, taxable income \u20b91,438,600, TDS \u20b9253,848, and monthly bank net salary credit \u20b9133,746.",
+    "expected_sources": [
+      {
+        "document_id": "CUST046_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST046_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST322",
+    "customer_id": "CUST046",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST323",
+    "customer_id": "CUST047",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee information is not recorded in insurance_policy_01.pdf (Page 2).",
+    "expected_sources": [
+      {
+        "document_id": "CUST047_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST324",
+    "customer_id": "CUST047",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-602021 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b912,330.36.",
+    "expected_sources": [
+      {
+        "document_id": "CUST047_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST325",
+    "customer_id": "CUST047",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b92,100,000 with TDS \u20b9285,672.",
+    "expected_sources": [
+      {
+        "document_id": "CUST047_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST047_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST326",
+    "customer_id": "CUST047",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b99,000, totaling \u20b9108,000 annually under folio DEMO-MF-301363.",
+    "expected_sources": [
+      {
+        "document_id": "CUST047_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST047_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST327",
+    "customer_id": "CUST047",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501457 matures on 15-Nov-2025 with a maturity amount of \u20b9376,627.63.",
+    "expected_sources": [
+      {
+        "document_id": "CUST047_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST328",
+    "customer_id": "CUST047",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 15-Nov-2025 and auto-renewal status NO.",
+    "expected_sources": [
+      {
+        "document_id": "CUST047_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST329",
+    "customer_id": "CUST047",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Anjali Chopra (CUST048)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST330",
+    "customer_id": "CUST048",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee information is not recorded in insurance_policy_01.pdf (Page 2).",
+    "expected_sources": [
+      {
+        "document_id": "CUST048_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST331",
+    "customer_id": "CUST048",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-602064 with Narmada Retail FinCorp Ltd. (DEMO) has a contracted monthly EMI of \u20b914,882.04.",
+    "expected_sources": [
+      {
+        "document_id": "CUST048_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST332",
+    "customer_id": "CUST048",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b92,220,000 with TDS \u20b9317,496.",
+    "expected_sources": [
+      {
+        "document_id": "CUST048_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST048_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST333",
+    "customer_id": "CUST048",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b911,000, totaling \u20b9132,000 annually under folio DEMO-MF-301392.",
+    "expected_sources": [
+      {
+        "document_id": "CUST048_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST048_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST334",
+    "customer_id": "CUST048",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501488 matures on 15-Nov-2025 with a maturity amount of \u20b9431,065.85.",
+    "expected_sources": [
+      {
+        "document_id": "CUST048_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST335",
+    "customer_id": "CUST048",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b92,220,000, taxable income \u20b91,642,600, TDS \u20b9317,496, and monthly bank net salary credit \u20b9147,242.",
+    "expected_sources": [
+      {
+        "document_id": "CUST048_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST048_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST336",
+    "customer_id": "CUST048",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST337",
+    "customer_id": "CUST049",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee information is not recorded in insurance_policy_01.pdf (Page 2).",
+    "expected_sources": [
+      {
+        "document_id": "CUST049_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST338",
+    "customer_id": "CUST049",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-602107 with Crestline FinServe Ltd. (DEMO) has a contracted monthly EMI of \u20b917,063.78.",
+    "expected_sources": [
+      {
+        "document_id": "CUST049_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST339",
+    "customer_id": "CUST049",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b9900,000 with TDS \u20b928,512.",
+    "expected_sources": [
+      {
+        "document_id": "CUST049_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST049_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST340",
+    "customer_id": "CUST049",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b910,000, totaling \u20b9120,000 annually under folio DEMO-MF-301421.",
+    "expected_sources": [
+      {
+        "document_id": "CUST049_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST049_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST341",
+    "customer_id": "CUST049",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501519 matures on 15-Nov-2025 with a maturity amount of \u20b9160,936.93.",
+    "expected_sources": [
+      {
+        "document_id": "CUST049_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST342",
+    "customer_id": "CUST049",
+    "category": "follow_up",
+    "question": "Which document supports this FD maturity and auto-renewal status?",
+    "expected_answer": "FD_Certificate (fd_certificate.pdf, Page 1) confirms maturity on 15-Nov-2025 and auto-renewal status NO.",
+    "expected_sources": [
+      {
+        "document_id": "CUST049_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST343",
+    "customer_id": "CUST049",
+    "category": "customer_data_isolation",
+    "question": "What is the bank account balance and salary of Rashmi Patel (CUST050)?",
+    "expected_answer": "Information about another customer's accounts or salary is unavailable and cannot be accessed under customer data isolation.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  },
+  {
+    "test_id": "TEST344",
+    "customer_id": "CUST050",
+    "category": "missing_information_detection",
+    "question": "Do I have any missing nominee details in my primary life insurance policy?",
+    "expected_answer": "Nominee information is not recorded in insurance_policy_01.pdf (Page 2).",
+    "expected_sources": [
+      {
+        "document_id": "CUST050_insurance_policy_01",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "NEEDS_VERIFICATION"
+  },
+  {
+    "test_id": "TEST345",
+    "customer_id": "CUST050",
+    "category": "single_document_retrieval",
+    "question": "What is my contracted monthly EMI and loan account number?",
+    "expected_answer": "Your personal loan DEMO-PL-602150 with Vanguard Capital Finance Ltd. (DEMO) has a contracted monthly EMI of \u20b919,614.83.",
+    "expected_sources": [
+      {
+        "document_id": "CUST050_loan_statement",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST346",
+    "customer_id": "CUST050",
+    "category": "cross_document_reasoning",
+    "question": "Does my Form 16 gross salary match my AIS reported salary?",
+    "expected_answer": "Yes. Both Form 16 and AIS report gross salary of \u20b91,020,000 with TDS \u20b946,992.",
+    "expected_sources": [
+      {
+        "document_id": "CUST050_ais_report",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST050_form16",
+        "page_number": 2
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST347",
+    "customer_id": "CUST050",
+    "category": "financial_calculations",
+    "question": "What is my total annual mutual fund SIP investment?",
+    "expected_answer": "Your total monthly SIP is \u20b912,000, totaling \u20b9144,000 annually under folio DEMO-MF-301450.",
+    "expected_sources": [
+      {
+        "document_id": "CUST050_mutual_fund_statement",
+        "page_number": 1
+      },
+      {
+        "document_id": "CUST050_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST348",
+    "customer_id": "CUST050",
+    "category": "date_and_maturity",
+    "question": "When does my fixed deposit mature and what is the maturity amount?",
+    "expected_answer": "Fixed Deposit DEMO-FD-501550 matures on 15-Nov-2025 with a maturity amount of \u20b9214,899.00.",
+    "expected_sources": [
+      {
+        "document_id": "CUST050_fd_certificate",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST349",
+    "customer_id": "CUST050",
+    "category": "complex_financial_query",
+    "question": "Summarize my taxable income, Form 16 deductions, and monthly net salary.",
+    "expected_answer": "Form 16 reports gross salary \u20b91,020,000, taxable income \u20b9663,400, TDS \u20b946,992, and monthly bank net salary credit \u20b975,784.",
+    "expected_sources": [
+      {
+        "document_id": "CUST050_form16",
+        "page_number": 2
+      },
+      {
+        "document_id": "CUST050_bank_statement_01",
+        "page_number": 1
+      }
+    ],
+    "expected_confidence": "CONFIRMED"
+  },
+  {
+    "test_id": "TEST350",
+    "customer_id": "CUST050",
+    "category": "unanswerable",
+    "question": "What is my cryptocurrency wallet balance and foreign stock capital gains?",
+    "expected_answer": "This information is unavailable in your uploaded financial documents.",
+    "expected_sources": [],
+    "expected_confidence": "UNAVAILABLE"
+  }
+]

@@ -1,0 +1,299 @@
+{
+  "dataset_id": "DEMO_001",
+  "reference_date": "2026-05-15",
+  "total_questions": 28,
+  "questions": [
+    {
+      "question_id": "Q001",
+      "question": "How many bank accounts have been identified?",
+      "category": "cross_document_discovery",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["Bank_Statement.pdf", "AIS_Report.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1], "AIS_Report.pdf": [2]},
+      "related_finding_id": "F001",
+      "expected_answer": "Two savings bank accounts have been identified: (1) Horizon Trust Bank Ltd. (DEMO-SB-1004582910), verified via the uploaded bank statement and AIS; and (2) MetroCivic Co-operative Bank Ltd. (DEMO-SB-77319044), discovered through AIS with ₹4,850.00 interest reported, whose ownership and current status need verification."
+    },
+    {
+      "question_id": "Q002",
+      "question": "Is there any account appearing in AIS but not in my uploaded bank statement?",
+      "category": "cross_document_reconciliation",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["AIS_Report.pdf", "Bank_Statement.pdf"],
+      "expected_page_references": {"AIS_Report.pdf": [2], "Bank_Statement.pdf": [1]},
+      "related_finding_id": "F001",
+      "expected_answer": "Yes. Savings account DEMO-SB-77319044 at MetroCivic Co-operative Bank Ltd. (DEMO) appears in AIS_Report.pdf (Page 2) with ₹4,850.00 in savings interest, but no bank statement was uploaded for it. Status: AMBER — Discovered through AIS – account ownership and current status need verification."
+    },
+    {
+      "question_id": "Q003",
+      "question": "Do I have any missing nominees?",
+      "category": "compliance_and_protection",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["Insurance_Policy.pdf", "FD_Certificate.pdf"],
+      "expected_page_references": {"Insurance_Policy.pdf": [2], "FD_Certificate.pdf": [1]},
+      "related_finding_id": "F002",
+      "expected_answer": "Yes. Nominee information was not found in your SurakshaGuard Life Insurance Policy (DEMO-LI-8841209) — Section 4 (Nominee Details) on Page 2 of Insurance_Policy.pdf is blank (RED – Potentially missing nominee). Your Fixed Deposit DEMO-FD-902184 does have a registered nominee (Vikram Sharma – Brother, 100%)."
+    },
+    {
+      "question_id": "Q004",
+      "question": "Which insurance policy needs attention?",
+      "category": "compliance_and_protection",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["Insurance_Policy.pdf"],
+      "expected_page_references": {"Insurance_Policy.pdf": [1, 2]},
+      "related_finding_id": "F002",
+      "expected_answer": "SurakshaGuard Term Assure Plus Policy No. DEMO-LI-8841209 (Sum Assured ₹1,00,00,000.00) needs attention because the Nominee Details section on Page 2 of Insurance_Policy.pdf is completely blank."
+    },
+    {
+      "question_id": "Q005",
+      "question": "How much am I spending on subscriptions?",
+      "category": "expense_analytics",
+      "retrieval_type": "SQL",
+      "required_source_documents": ["Bank_Statement.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1, 2, 3, 4]},
+      "related_finding_id": "F004",
+      "expected_answer": "You spend ₹1,347.00 per month (₹16,164.00 annually) across three recurring subscriptions: StreamFlix India (₹649.00/mo = ₹7,788.00/yr), CloudNotes Pro (₹499.00/mo = ₹5,988.00/yr), and TuneWave Music (₹199.00/mo = ₹2,388.00/yr)."
+    },
+    {
+      "question_id": "Q006",
+      "question": "What are my recurring monthly expenses?",
+      "category": "expense_analytics",
+      "retrieval_type": "SQL",
+      "required_source_documents": ["Bank_Statement.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1, 2, 3, 4]},
+      "related_finding_id": "F004",
+      "expected_answer": "Your fixed recurring monthly debits in Bank_Statement.pdf total ₹54,751.84/month: House Rent (₹19,500.00), Personal Loan EMI (₹14,689.84), Life Insurance Premium (₹2,200.00), Subscriptions (StreamFlix ₹649.00 + CloudNotes Pro ₹499.00 + TuneWave ₹199.00 = ₹1,347.00), and SMS Alert Charge (₹15.00), alongside bimonthly BESCOM electricity bills and an annual ₹590.00 maintenance fee."
+    },
+    {
+      "question_id": "Q007",
+      "question": "What is my annual salary according to Form 16?",
+      "category": "tax_and_income",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["Form_16.pdf"],
+      "expected_page_references": {"Form_16.pdf": [1, 2]},
+      "related_finding_id": "F003",
+      "expected_answer": "According to Form_16.pdf (Pages 1–2), your Gross Salary u/s 17(1) for FY 2025–26 from TechNova Solutions Pvt. Ltd. is ₹11,42,400.00 (Basic ₹5,40,000 + HRA ₹2,70,000 + Special Allowance ₹3,32,400), and your Total Taxable Income is ₹7,37,500.00."
+    },
+    {
+      "question_id": "Q008",
+      "question": "Is there any discrepancy between AIS and Form 16?",
+      "category": "cross_document_reconciliation",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["AIS_Report.pdf", "Form_16.pdf"],
+      "expected_page_references": {"AIS_Report.pdf": [1], "Form_16.pdf": [1, 2]},
+      "related_finding_id": "F003",
+      "expected_answer": "Yes. AIS_Report.pdf (Page 1) reports gross salary u/s 192 of ₹11,60,400.00, while Form_16.pdf (Pages 1–2) reports gross salary of ₹11,42,400.00—a difference of ₹18,000.00. TDS deducted matches in both documents at ₹62,400.00. This discrepancy should be flagged for payroll reconciliation review rather than assumed to be fraud or an error."
+    },
+    {
+      "question_id": "Q009",
+      "question": "When does my fixed deposit mature?",
+      "category": "asset_monitoring",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["FD_Certificate.pdf"],
+      "expected_page_references": {"FD_Certificate.pdf": [1]},
+      "related_finding_id": "F005",
+      "expected_answer": "Your Fixed Deposit (DEMO-FD-902184) at Horizon Trust Bank Ltd. matures on 25-Jun-2026 (41 days from the 15-May-2026 reference date) with a maturity amount of ₹2,68,492.00. Because auto-renewal is set to NO, you should review renewal or withdrawal options before maturity."
+    },
+    {
+      "question_id": "Q010",
+      "question": "What is my outstanding loan amount?",
+      "category": "liability_tracking",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["Loan_Statement.pdf"],
+      "expected_page_references": {"Loan_Statement.pdf": [1]},
+      "related_finding_id": "F006",
+      "expected_answer": "Your Personal Loan (DEMO-PL-5509123) with Crestline FinServe Ltd. has an outstanding principal of ₹2,17,987.90 as of 15-May-2026 (and ₹2,43,104.22 as of 31-Mar-2026)."
+    },
+    {
+      "question_id": "Q011",
+      "question": "Can you identify my monthly EMI?",
+      "category": "cross_document_reconciliation",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["Loan_Statement.pdf", "Bank_Statement.pdf"],
+      "expected_page_references": {"Loan_Statement.pdf": [1], "Bank_Statement.pdf": [1, 2, 3]},
+      "related_finding_id": "F006",
+      "expected_answer": "Your monthly Personal Loan EMI is ₹14,689.84 for Loan Account DEMO-PL-5509123 at Crestline FinServe Ltd. It is debited via NACH Auto-Debit on the 5th of every month from Horizon Trust Bank account DEMO-SB-1004582910."
+    },
+    {
+      "question_id": "Q012",
+      "question": "Which findings need immediate verification?",
+      "category": "risk_and_alerts",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["Insurance_Policy.pdf", "AIS_Report.pdf", "Bank_Statement.pdf", "Form_16.pdf", "FD_Certificate.pdf"],
+      "expected_page_references": {
+        "Insurance_Policy.pdf": [2],
+        "AIS_Report.pdf": [1, 2],
+        "Form_16.pdf": [1, 2],
+        "FD_Certificate.pdf": [1]
+      },
+      "related_finding_id": "F002",
+      "expected_answer": "Priority items for verification: (1) RED: Missing nominee details in Life Insurance Policy DEMO-LI-8841209 (Insurance_Policy.pdf, Page 2); (2) AMBER: Overlooked savings account DEMO-SB-77319044 at MetroCivic Co-op Bank in AIS (AIS_Report.pdf, Page 2); (3) AMBER: ₹18,000.00 gross salary variance between AIS and Form 16; and (4) AMBER: Upcoming FD maturity on 25-Jun-2026 with auto-renewal turned off."
+    },
+    {
+      "question_id": "Q013",
+      "question": "Show me all financial assets discovered.",
+      "category": "asset_monitoring",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["Bank_Statement.pdf", "FD_Certificate.pdf", "AIS_Report.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1, 4], "FD_Certificate.pdf": [1], "AIS_Report.pdf": [2]},
+      "related_finding_id": "F001",
+      "expected_answer": "Financial assets identified: (1) Horizon Trust Bank Savings Account DEMO-SB-1004582910 (closing balance ₹4,82,807.92 on 31-Mar-2026); (2) Horizon Trust Bank Fixed Deposit DEMO-FD-902184 (principal ₹2,50,000.00, maturity ₹2,68,492.00 on 25-Jun-2026); (3) MetroCivic Co-op Bank Savings Account DEMO-SB-77319044 discovered via AIS (₹4,850.00 interest, needs verification); and (4) Equity/Mutual Fund holdings generating ₹4,250.00 in dividends (BharatGrid Power Corp. Ltd. & Apex Bluechip Mutual Fund)."
+    },
+    {
+      "question_id": "Q014",
+      "question": "Why was my nominee coverage marked red?",
+      "category": "compliance_and_protection",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["Insurance_Policy.pdf"],
+      "expected_page_references": {"Insurance_Policy.pdf": [2]},
+      "related_finding_id": "F002",
+      "expected_answer": "Your nominee coverage was marked RED – Potentially missing nominee because Section 4 (Nominee Details) on Page 2 of Insurance_Policy.pdf has empty fields for Nominee Full Name, Relationship, Date of Birth/Age, Percentage Share, and Appointee Name."
+    },
+    {
+      "question_id": "Q015",
+      "question": "Which document supports this finding?",
+      "category": "evidence_citation",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["Insurance_Policy.pdf", "AIS_Report.pdf", "Form_16.pdf", "FD_Certificate.pdf", "Loan_Statement.pdf", "Bank_Statement.pdf"],
+      "expected_page_references": {
+        "Insurance_Policy.pdf": [2],
+        "AIS_Report.pdf": [1, 2],
+        "Form_16.pdf": [1, 2],
+        "FD_Certificate.pdf": [1],
+        "Loan_Statement.pdf": [1, 2],
+        "Bank_Statement.pdf": [1, 2, 3, 4]
+      },
+      "related_finding_id": "F002",
+      "expected_answer": "Each finding is backed by exact document citations: missing nominee by Insurance_Policy.pdf (Page 2, Section 4); overlooked bank account by AIS_Report.pdf (Page 2, Part B2) vs Bank_Statement.pdf (Page 1); salary variance by AIS_Report.pdf (Page 1, Part B1) vs Form_16.pdf (Pages 1–2); FD maturity by FD_Certificate.pdf (Page 1); and loan EMI reconciliation by Loan_Statement.pdf (Pages 1–2) and Bank_Statement.pdf (Pages 1–3)."
+    },
+    {
+      "question_id": "Q016",
+      "question": "How much savings bank interest did I earn in FY 2025–26 across all banks?",
+      "category": "tax_and_income",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["Bank_Statement.pdf", "AIS_Report.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1, 2, 3, 4], "AIS_Report.pdf": [1, 2]},
+      "related_finding_id": "F001",
+      "expected_answer": "Total savings bank interest reported in AIS for FY 2025–26 is ₹12,050.00: ₹7,200.00 from Horizon Trust Bank Ltd. (verified by 4 quarterly credits of ₹1,620, ₹1,780, ₹1,840, and ₹1,960 in Bank_Statement.pdf) and ₹4,850.00 from MetroCivic Co-operative Bank Ltd. (unverified account in AIS)."
+    },
+    {
+      "question_id": "Q017",
+      "question": "What bank charges and fees were deducted from my Horizon Trust Bank account?",
+      "category": "expense_analytics",
+      "retrieval_type": "SQL",
+      "required_source_documents": ["Bank_Statement.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1, 2, 3, 4]},
+      "related_finding_id": "F004",
+      "expected_answer": "Total bank fees deducted in FY 2025–26 were ₹770.00: 12 monthly SMS Alert Service Charges of ₹15.00 each (₹180.00/year) and one Annual Account Maintenance Charge of ₹590.00 on 15-Oct-2025 (Page 2)."
+    },
+    {
+      "question_id": "Q018",
+      "question": "What is my net monthly salary credited to the bank, and how does it relate to Form 16?",
+      "category": "cross_document_reconciliation",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["Bank_Statement.pdf", "Form_16.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1, 2, 3, 4], "Form_16.pdf": [1, 2]},
+      "related_finding_id": "F003",
+      "expected_answer": "TechNova Solutions Pvt. Ltd. credited ₹84,400.00 net per month (₹10,12,800.00 across 12 months) to Horizon Trust Bank. This matches Form 16 monthly gross salary of ₹95,200.00 (₹11,42,400.00/12) less monthly Employee PF (₹5,400.00), Professional Tax (₹200.00), and TDS (₹5,200.00)."
+    },
+    {
+      "question_id": "Q019",
+      "question": "Which tax deductions did I claim in Form 16 under Chapter VI-A?",
+      "category": "tax_and_income",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["Form_16.pdf"],
+      "expected_page_references": {"Form_16.pdf": [2]},
+      "related_finding_id": null,
+      "expected_answer": "Under the Old Tax Regime in Form_16.pdf (Page 2), you claimed ₹1,72,500.00 under Chapter VI-A: ₹1,50,000.00 under Section 80C (Employee PF ₹64,800.00 + SurakshaGuard Life Insurance ₹26,400.00 + ELSS Tax Saver ₹58,800.00) and ₹22,500.00 under Section 80D (Health Insurance Premium)."
+    },
+    {
+      "question_id": "Q020",
+      "question": "Was any TDS deducted on my Fixed Deposit or Dividend income?",
+      "category": "tax_and_income",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["AIS_Report.pdf", "FD_Certificate.pdf"],
+      "expected_page_references": {"AIS_Report.pdf": [1, 2], "FD_Certificate.pdf": [1, 2]},
+      "related_finding_id": "F005",
+      "expected_answer": "No TDS (₹0.00) was deducted on your Fixed Deposit accrued interest (₹14,057.00, below the ₹40,000.00 threshold u/s 194A) or on your Dividend income (₹4,250.00)."
+    },
+    {
+      "question_id": "Q021",
+      "question": "What are the premature withdrawal terms for my Fixed Deposit?",
+      "category": "asset_monitoring",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["FD_Certificate.pdf"],
+      "expected_page_references": {"FD_Certificate.pdf": [2]},
+      "related_finding_id": "F005",
+      "expected_answer": "According to FD_Certificate.pdf (Page 2, Section 3), premature withdrawal carries a 1.00% penalty below the applicable card rate for the actual period held (or contracted rate minus 1.00%, whichever is lower), and no interest is paid if closed within 7 days of the deposit date (25-Jun-2025)."
+    },
+    {
+      "question_id": "Q022",
+      "question": "How much principal and interest did I pay on my personal loan during FY 2025–26?",
+      "category": "liability_tracking",
+      "retrieval_type": "SQL",
+      "required_source_documents": ["Loan_Statement.pdf"],
+      "expected_page_references": {"Loan_Statement.pdf": [1]},
+      "related_finding_id": "F006",
+      "expected_answer": "During FY 2025–26 (12 EMIs), you paid a total of ₹1,76,278.08 toward Personal Loan DEMO-PL-5509123, comprising ₹1,41,603.00 in principal repayment and ₹34,675.08 in interest, reducing the principal from ₹3,84,707.22 to ₹2,43,104.22."
+    },
+    {
+      "question_id": "Q023",
+      "question": "When are my upcoming loan EMI due dates and when does the loan end?",
+      "category": "liability_tracking",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["Loan_Statement.pdf"],
+      "expected_page_references": {"Loan_Statement.pdf": [2]},
+      "related_finding_id": "F006",
+      "expected_answer": "As of 15-May-2026, 16 EMIs remain. The next three upcoming EMI due dates are 05-Jun-2026, 05-Jul-2026, and 05-Aug-2026, and the final installment (#36) is due on 05-Sep-2027."
+    },
+    {
+      "question_id": "Q024",
+      "question": "Does the life insurance premium in my bank statement match my policy and Form 16?",
+      "category": "cross_document_reconciliation",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["Bank_Statement.pdf", "Insurance_Policy.pdf", "Form_16.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1, 2, 3], "Insurance_Policy.pdf": [1], "Form_16.pdf": [2]},
+      "related_finding_id": null,
+      "expected_answer": "Yes. Bank_Statement.pdf shows 12 monthly NACH debits of ₹2,200.00 (₹26,400.00/yr) to SurakshaGuard Life Insurance (DEMO-LI-8841209), matching Insurance_Policy.pdf (Page 1, Section 3) and the ₹26,400.00 Section 80C deduction in Form_16.pdf (Page 2)."
+    },
+    {
+      "question_id": "Q025",
+      "question": "What is the funding source for my Fixed Deposit DEMO-FD-902184?",
+      "category": "cross_document_reconciliation",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["FD_Certificate.pdf", "Bank_Statement.pdf"],
+      "expected_page_references": {"FD_Certificate.pdf": [1, 2], "Bank_Statement.pdf": [2]},
+      "related_finding_id": "F005",
+      "expected_answer": "Fixed Deposit DEMO-FD-902184 (₹2,50,000.00) was funded from Horizon Trust Bank savings account DEMO-SB-1004582910 via an internal transfer of ₹2,50,000.00 on 25-Jun-2025 (Bank_Statement.pdf, Page 2)."
+    },
+    {
+      "question_id": "Q026",
+      "question": "Does my house rent paid in the bank statement match the HRA exemption in Form 16?",
+      "category": "cross_document_reconciliation",
+      "retrieval_type": "Hybrid",
+      "required_source_documents": ["Bank_Statement.pdf", "Form_16.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1, 2, 3], "Form_16.pdf": [2]},
+      "related_finding_id": null,
+      "expected_answer": "Yes. Bank_Statement.pdf shows 12 monthly NEFT rent payments of ₹19,500.00 to Ramesh Kulkarni totaling ₹2,34,000.00/year, which matches the declared rent of ₹2,34,000.00 used in Form_16.pdf (Page 2) to compute the ₹1,80,000.00 HRA exemption (₹2,34,000 − 10% of Basic ₹54,000)."
+    },
+    {
+      "question_id": "Q027",
+      "question": "What is my opening and closing balance in Horizon Trust Bank for FY 2025–26?",
+      "category": "expense_analytics",
+      "retrieval_type": "SQL",
+      "required_source_documents": ["Bank_Statement.pdf"],
+      "expected_page_references": {"Bank_Statement.pdf": [1, 4]},
+      "related_finding_id": null,
+      "expected_answer": "Your Horizon Trust Bank account (DEMO-SB-1004582910) opened on 01-Apr-2025 with ₹2,20,000.00 and closed on 31-Mar-2026 with ₹4,82,807.92, with total credits of ₹10,20,000.00 and total debits of ₹7,57,192.08 across 119 transactions."
+    },
+    {
+      "question_id": "Q028",
+      "question": "What dividend income did I receive in FY 2025–26 and from which entities?",
+      "category": "tax_and_income",
+      "retrieval_type": "RAG",
+      "required_source_documents": ["AIS_Report.pdf"],
+      "expected_page_references": {"AIS_Report.pdf": [1, 2]},
+      "related_finding_id": null,
+      "expected_answer": "According to AIS_Report.pdf (Pages 1–2, Part B4), you received ₹4,250.00 in total dividend income: ₹2,400.00 from BharatGrid Power Corp. Ltd. (18-Aug-2025) and ₹1,850.00 from Apex Bluechip Mutual Fund – IDCW (12-Feb-2026), with ₹0.00 TDS."
+    }
+  ]
+}

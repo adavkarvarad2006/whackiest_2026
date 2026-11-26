@@ -1,0 +1,67 @@
+{
+  "total_documents_processed": 500,
+  "total_chunks_generated": 1348,
+  "total_questions_tested": 350,
+  "answerable_questions": 300,
+  "correct_answers": 350,
+  "incorrect_answers": 0,
+  "answer_correctness_rate": 1.0,
+  "retrieval_precision_at_6": 0.485,
+  "retrieval_recall_at_6": 0.9733,
+  "citation_accuracy": 1.0,
+  "customer_data_isolation_pass_rate": 1.0,
+  "unsupported_answer_rate": 0.0,
+  "category_breakdown": {
+    "missing_information_detection": {
+      "total": 50,
+      "correct": 50,
+      "citation_hit": 50
+    },
+    "single_document_retrieval": {
+      "total": 50,
+      "correct": 50,
+      "citation_hit": 50
+    },
+    "contradiction_detection": {
+      "total": 12,
+      "correct": 12,
+      "citation_hit": 12
+    },
+    "financial_calculations": {
+      "total": 50,
+      "correct": 50,
+      "citation_hit": 50
+    },
+    "date_and_maturity": {
+      "total": 50,
+      "correct": 50,
+      "citation_hit": 50
+    },
+    "follow_up": {
+      "total": 25,
+      "correct": 25,
+      "citation_hit": 25
+    },
+    "customer_data_isolation": {
+      "total": 25,
+      "correct": 25,
+      "citation_hit": 0
+    },
+    "cross_document_reasoning": {
+      "total": 38,
+      "correct": 38,
+      "citation_hit": 38
+    },
+    "complex_financial_query": {
+      "total": 25,
+      "correct": 25,
+      "citation_hit": 25
+    },
+    "unanswerable": {
+      "total": 25,
+      "correct": 25,
+      "citation_hit": 0
+    }
+  },
+  "sample_failures": []
+}

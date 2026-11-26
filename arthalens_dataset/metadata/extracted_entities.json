@@ -1,0 +1,827 @@
+{
+  "CUST001": {
+    "customer_id": "CUST001",
+    "full_name": "Aarav Deshmukh",
+    "pan": "DEMOA0001A (DEMO)",
+    "employer": "TechNova Solutions Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-100137",
+      "DEMO-SB-200193"
+    ],
+    "fd_number": "DEMO-FD-500031",
+    "loan_number": "DEMO-PL-600043",
+    "policy_numbers": [
+      "DEMO-LI-800017",
+      "DEMO-LI-900023"
+    ],
+    "mf_folio": "DEMO-MF-300029"
+  },
+  "CUST002": {
+    "customer_id": "CUST002",
+    "full_name": "Ananya Joshi",
+    "pan": "DEMOB0002H (DEMO)",
+    "employer": "IndusByte Systems India Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-100274",
+      "DEMO-SB-200386"
+    ],
+    "fd_number": "DEMO-FD-500062",
+    "loan_number": "DEMO-PL-600086",
+    "policy_numbers": [
+      "DEMO-LI-800034",
+      "DEMO-LI-900046"
+    ],
+    "mf_folio": "DEMO-MF-300058"
+  },
+  "CUST003": {
+    "customer_id": "CUST003",
+    "full_name": "Rohan Rao",
+    "pan": "DEMOC0003O (DEMO)",
+    "employer": "VerveCloud Technologies Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-100411",
+      "DEMO-SB-200579"
+    ],
+    "fd_number": "DEMO-FD-500093",
+    "loan_number": "DEMO-PL-600129",
+    "policy_numbers": [
+      "DEMO-LI-800051",
+      "DEMO-LI-900069"
+    ],
+    "mf_folio": "DEMO-MF-300087"
+  },
+  "CUST004": {
+    "customer_id": "CUST004",
+    "full_name": "Priya Malhotra",
+    "pan": "DEMOD0004V (DEMO)",
+    "employer": "Kaveri Digital Labs Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-100548",
+      "DEMO-SB-200772"
+    ],
+    "fd_number": "DEMO-FD-500124",
+    "loan_number": "DEMO-PL-600172",
+    "policy_numbers": [
+      "DEMO-LI-800068",
+      "DEMO-LI-900092"
+    ],
+    "mf_folio": "DEMO-MF-300116"
+  },
+  "CUST005": {
+    "customer_id": "CUST005",
+    "full_name": "Vikram Sen",
+    "pan": "DEMOE0005C (DEMO)",
+    "employer": "ApexFin Analytics Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-100685",
+      "DEMO-SB-200965"
+    ],
+    "fd_number": "DEMO-FD-500155",
+    "loan_number": "DEMO-PL-600215",
+    "policy_numbers": [
+      "DEMO-LI-800085",
+      "DEMO-LI-900115"
+    ],
+    "mf_folio": "DEMO-MF-300145"
+  },
+  "CUST006": {
+    "customer_id": "CUST006",
+    "full_name": "Sneha Bansal",
+    "pan": "DEMOF0006J (DEMO)",
+    "employer": "SaffronGrid Software Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-100822",
+      "DEMO-SB-201158"
+    ],
+    "fd_number": "DEMO-FD-500186",
+    "loan_number": "DEMO-PL-600258",
+    "policy_numbers": [
+      "DEMO-LI-800102",
+      "DEMO-LI-900138"
+    ],
+    "mf_folio": "DEMO-MF-300174"
+  },
+  "CUST007": {
+    "customer_id": "CUST007",
+    "full_name": "Karthik Sharma",
+    "pan": "DEMOG0007Q (DEMO)",
+    "employer": "DeccanData Engineering Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-100959",
+      "DEMO-SB-201351"
+    ],
+    "fd_number": "DEMO-FD-500217",
+    "loan_number": "DEMO-PL-600301",
+    "policy_numbers": [
+      "DEMO-LI-800119",
+      "DEMO-LI-900161"
+    ],
+    "mf_folio": "DEMO-MF-300203"
+  },
+  "CUST008": {
+    "customer_id": "CUST008",
+    "full_name": "Meera Iyer",
+    "pan": "DEMOH0008X (DEMO)",
+    "employer": "BluePeak Consulting Services Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-101096",
+      "DEMO-SB-201544"
+    ],
+    "fd_number": "DEMO-FD-500248",
+    "loan_number": "DEMO-PL-600344",
+    "policy_numbers": [
+      "DEMO-LI-800136",
+      "DEMO-LI-900184"
+    ],
+    "mf_folio": "DEMO-MF-300232"
+  },
+  "CUST009": {
+    "customer_id": "CUST009",
+    "full_name": "Arjun Reddy",
+    "pan": "DEMOI0009E (DEMO)",
+    "employer": "TechNova Solutions Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-101233",
+      "DEMO-SB-201737"
+    ],
+    "fd_number": "DEMO-FD-500279",
+    "loan_number": "DEMO-PL-600387",
+    "policy_numbers": [
+      "DEMO-LI-800153",
+      "DEMO-LI-900207"
+    ],
+    "mf_folio": "DEMO-MF-300261"
+  },
+  "CUST010": {
+    "customer_id": "CUST010",
+    "full_name": "Divya Menon",
+    "pan": "DEMOJ0010L (DEMO)",
+    "employer": "IndusByte Systems India Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-101370",
+      "DEMO-SB-201930"
+    ],
+    "fd_number": "DEMO-FD-500310",
+    "loan_number": "DEMO-PL-600430",
+    "policy_numbers": [
+      "DEMO-LI-800170",
+      "DEMO-LI-900230"
+    ],
+    "mf_folio": "DEMO-MF-300290"
+  },
+  "CUST011": {
+    "customer_id": "CUST011",
+    "full_name": "Siddharth Bhat",
+    "pan": "DEMOK0011S (DEMO)",
+    "employer": "VerveCloud Technologies Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-101507",
+      "DEMO-SB-202123"
+    ],
+    "fd_number": "DEMO-FD-500341",
+    "loan_number": "DEMO-PL-600473",
+    "policy_numbers": [
+      "DEMO-LI-800187",
+      "DEMO-LI-900253"
+    ],
+    "mf_folio": "DEMO-MF-300319"
+  },
+  "CUST012": {
+    "customer_id": "CUST012",
+    "full_name": "Kavya Banerjee",
+    "pan": "DEMOL0012Z (DEMO)",
+    "employer": "Kaveri Digital Labs Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-101644",
+      "DEMO-SB-202316"
+    ],
+    "fd_number": "DEMO-FD-500372",
+    "loan_number": "DEMO-PL-600516",
+    "policy_numbers": [
+      "DEMO-LI-800204",
+      "DEMO-LI-900276"
+    ],
+    "mf_folio": "DEMO-MF-300348"
+  },
+  "CUST013": {
+    "customer_id": "CUST013",
+    "full_name": "Aditya Mehta",
+    "pan": "DEMOM0013G (DEMO)",
+    "employer": "ApexFin Analytics Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-101781",
+      "DEMO-SB-202509"
+    ],
+    "fd_number": "DEMO-FD-500403",
+    "loan_number": "DEMO-PL-600559",
+    "policy_numbers": [
+      "DEMO-LI-800221",
+      "DEMO-LI-900299"
+    ],
+    "mf_folio": "DEMO-MF-300377"
+  },
+  "CUST014": {
+    "customer_id": "CUST014",
+    "full_name": "Neha Shetty",
+    "pan": "DEMON0014N (DEMO)",
+    "employer": "SaffronGrid Software Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-101918",
+      "DEMO-SB-202702"
+    ],
+    "fd_number": "DEMO-FD-500434",
+    "loan_number": "DEMO-PL-600602",
+    "policy_numbers": [
+      "DEMO-LI-800238",
+      "DEMO-LI-900322"
+    ],
+    "mf_folio": "DEMO-MF-300406"
+  },
+  "CUST015": {
+    "customer_id": "CUST015",
+    "full_name": "Rahul Sinha",
+    "pan": "DEMOO0015U (DEMO)",
+    "employer": "DeccanData Engineering Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-102055",
+      "DEMO-SB-202895"
+    ],
+    "fd_number": "DEMO-FD-500465",
+    "loan_number": "DEMO-PL-600645",
+    "policy_numbers": [
+      "DEMO-LI-800255",
+      "DEMO-LI-900345"
+    ],
+    "mf_folio": "DEMO-MF-300435"
+  },
+  "CUST016": {
+    "customer_id": "CUST016",
+    "full_name": "Pooja Nair",
+    "pan": "DEMOP0016B (DEMO)",
+    "employer": "BluePeak Consulting Services Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-102192",
+      "DEMO-SB-203088"
+    ],
+    "fd_number": "DEMO-FD-500496",
+    "loan_number": "DEMO-PL-600688",
+    "policy_numbers": [
+      "DEMO-LI-800272",
+      "DEMO-LI-900368"
+    ],
+    "mf_folio": "DEMO-MF-300464"
+  },
+  "CUST017": {
+    "customer_id": "CUST017",
+    "full_name": "Nikhil Kulkarni",
+    "pan": "DEMOQ0017I (DEMO)",
+    "employer": "TechNova Solutions Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-102329",
+      "DEMO-SB-203281"
+    ],
+    "fd_number": "DEMO-FD-500527",
+    "loan_number": "DEMO-PL-600731",
+    "policy_numbers": [
+      "DEMO-LI-800289",
+      "DEMO-LI-900391"
+    ],
+    "mf_folio": "DEMO-MF-300493"
+  },
+  "CUST018": {
+    "customer_id": "CUST018",
+    "full_name": "Riya Gupta",
+    "pan": "DEMOR0018P (DEMO)",
+    "employer": "IndusByte Systems India Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-102466",
+      "DEMO-SB-203474"
+    ],
+    "fd_number": "DEMO-FD-500558",
+    "loan_number": "DEMO-PL-600774",
+    "policy_numbers": [
+      "DEMO-LI-800306",
+      "DEMO-LI-900414"
+    ],
+    "mf_folio": "DEMO-MF-300522"
+  },
+  "CUST019": {
+    "customer_id": "CUST019",
+    "full_name": "Varun Agarwal",
+    "pan": "DEMOS0019W (DEMO)",
+    "employer": "VerveCloud Technologies Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-102603",
+      "DEMO-SB-203667"
+    ],
+    "fd_number": "DEMO-FD-500589",
+    "loan_number": "DEMO-PL-600817",
+    "policy_numbers": [
+      "DEMO-LI-800323",
+      "DEMO-LI-900437"
+    ],
+    "mf_folio": "DEMO-MF-300551"
+  },
+  "CUST020": {
+    "customer_id": "CUST020",
+    "full_name": "Shreya Chatterjee",
+    "pan": "DEMOT0020D (DEMO)",
+    "employer": "Kaveri Digital Labs Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-102740",
+      "DEMO-SB-203860"
+    ],
+    "fd_number": "DEMO-FD-500620",
+    "loan_number": "DEMO-PL-600860",
+    "policy_numbers": [
+      "DEMO-LI-800340",
+      "DEMO-LI-900460"
+    ],
+    "mf_folio": "DEMO-MF-300580"
+  },
+  "CUST021": {
+    "customer_id": "CUST021",
+    "full_name": "Kunal Kapoor",
+    "pan": "DEMOU0021K (DEMO)",
+    "employer": "ApexFin Analytics Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-102877",
+      "DEMO-SB-204053"
+    ],
+    "fd_number": "DEMO-FD-500651",
+    "loan_number": "DEMO-PL-600903",
+    "policy_numbers": [
+      "DEMO-LI-800357",
+      "DEMO-LI-900483"
+    ],
+    "mf_folio": "DEMO-MF-300609"
+  },
+  "CUST022": {
+    "customer_id": "CUST022",
+    "full_name": "Ishita Pillai",
+    "pan": "DEMOV0022R (DEMO)",
+    "employer": "SaffronGrid Software Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-103014",
+      "DEMO-SB-204246"
+    ],
+    "fd_number": "DEMO-FD-500682",
+    "loan_number": "DEMO-PL-600946",
+    "policy_numbers": [
+      "DEMO-LI-800374",
+      "DEMO-LI-900506"
+    ],
+    "mf_folio": "DEMO-MF-300638"
+  },
+  "CUST023": {
+    "customer_id": "CUST023",
+    "full_name": "Pranav Chopra",
+    "pan": "DEMOW0023Y (DEMO)",
+    "employer": "DeccanData Engineering Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-103151",
+      "DEMO-SB-204439"
+    ],
+    "fd_number": "DEMO-FD-500713",
+    "loan_number": "DEMO-PL-600989",
+    "policy_numbers": [
+      "DEMO-LI-800391",
+      "DEMO-LI-900529"
+    ],
+    "mf_folio": "DEMO-MF-300667"
+  },
+  "CUST024": {
+    "customer_id": "CUST024",
+    "full_name": "Tanvi Verma",
+    "pan": "DEMOX0024F (DEMO)",
+    "employer": "BluePeak Consulting Services Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-103288",
+      "DEMO-SB-204632"
+    ],
+    "fd_number": "DEMO-FD-500744",
+    "loan_number": "DEMO-PL-601032",
+    "policy_numbers": [
+      "DEMO-LI-800408",
+      "DEMO-LI-900552"
+    ],
+    "mf_folio": "DEMO-MF-300696"
+  },
+  "CUST025": {
+    "customer_id": "CUST025",
+    "full_name": "Harsh Patel",
+    "pan": "DEMOY0025M (DEMO)",
+    "employer": "TechNova Solutions Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-103425",
+      "DEMO-SB-204825"
+    ],
+    "fd_number": "DEMO-FD-500775",
+    "loan_number": "DEMO-PL-601075",
+    "policy_numbers": [
+      "DEMO-LI-800425",
+      "DEMO-LI-900575"
+    ],
+    "mf_folio": "DEMO-MF-300725"
+  },
+  "CUST026": {
+    "customer_id": "CUST026",
+    "full_name": "Nandini Deshmukh",
+    "pan": "DEMOZ0026T (DEMO)",
+    "employer": "IndusByte Systems India Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-103562",
+      "DEMO-SB-205018"
+    ],
+    "fd_number": "DEMO-FD-500806",
+    "loan_number": "DEMO-PL-601118",
+    "policy_numbers": [
+      "DEMO-LI-800442"
+    ],
+    "mf_folio": "DEMO-MF-300754"
+  },
+  "CUST027": {
+    "customer_id": "CUST027",
+    "full_name": "Gaurav Joshi",
+    "pan": "DEMOA0027A (DEMO)",
+    "employer": "VerveCloud Technologies Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-103699",
+      "DEMO-SB-205211"
+    ],
+    "fd_number": "DEMO-FD-500837",
+    "loan_number": "DEMO-PL-601161",
+    "policy_numbers": [
+      "DEMO-LI-800459"
+    ],
+    "mf_folio": "DEMO-MF-300783"
+  },
+  "CUST028": {
+    "customer_id": "CUST028",
+    "full_name": "Aishwarya Rao",
+    "pan": "DEMOB0028H (DEMO)",
+    "employer": "Kaveri Digital Labs Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-103836",
+      "DEMO-SB-205404"
+    ],
+    "fd_number": "DEMO-FD-500868",
+    "loan_number": "DEMO-PL-601204",
+    "policy_numbers": [
+      "DEMO-LI-800476"
+    ],
+    "mf_folio": "DEMO-MF-300812"
+  },
+  "CUST029": {
+    "customer_id": "CUST029",
+    "full_name": "Manish Malhotra",
+    "pan": "DEMOC0029O (DEMO)",
+    "employer": "ApexFin Analytics Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-103973",
+      "DEMO-SB-205597"
+    ],
+    "fd_number": "DEMO-FD-500899",
+    "loan_number": "DEMO-PL-601247",
+    "policy_numbers": [
+      "DEMO-LI-800493"
+    ],
+    "mf_folio": "DEMO-MF-300841"
+  },
+  "CUST030": {
+    "customer_id": "CUST030",
+    "full_name": "Swati Sen",
+    "pan": "DEMOD0030V (DEMO)",
+    "employer": "SaffronGrid Software Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-104110",
+      "DEMO-SB-205790"
+    ],
+    "fd_number": "DEMO-FD-500930",
+    "loan_number": "DEMO-PL-601290",
+    "policy_numbers": [
+      "DEMO-LI-800510"
+    ],
+    "mf_folio": "DEMO-MF-300870"
+  },
+  "CUST031": {
+    "customer_id": "CUST031",
+    "full_name": "Deepak Bansal",
+    "pan": "DEMOE0031C (DEMO)",
+    "employer": "DeccanData Engineering Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-104247",
+      "DEMO-SB-205983"
+    ],
+    "fd_number": "DEMO-FD-500961",
+    "loan_number": "DEMO-PL-601333",
+    "policy_numbers": [
+      "DEMO-LI-800527"
+    ],
+    "mf_folio": "DEMO-MF-300899"
+  },
+  "CUST032": {
+    "customer_id": "CUST032",
+    "full_name": "Aditi Sharma",
+    "pan": "DEMOF0032J (DEMO)",
+    "employer": "BluePeak Consulting Services Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-104384",
+      "DEMO-SB-206176"
+    ],
+    "fd_number": "DEMO-FD-500992",
+    "loan_number": "DEMO-PL-601376",
+    "policy_numbers": [
+      "DEMO-LI-800544"
+    ],
+    "mf_folio": "DEMO-MF-300928"
+  },
+  "CUST033": {
+    "customer_id": "CUST033",
+    "full_name": "Suresh Iyer",
+    "pan": "DEMOG0033Q (DEMO)",
+    "employer": "TechNova Solutions Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-104521",
+      "DEMO-SB-206369"
+    ],
+    "fd_number": "DEMO-FD-501023",
+    "loan_number": "DEMO-PL-601419",
+    "policy_numbers": [
+      "DEMO-LI-800561"
+    ],
+    "mf_folio": "DEMO-MF-300957"
+  },
+  "CUST034": {
+    "customer_id": "CUST034",
+    "full_name": "Lakshmi Reddy",
+    "pan": "DEMOH0034X (DEMO)",
+    "employer": "IndusByte Systems India Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-104658",
+      "DEMO-SB-206562"
+    ],
+    "fd_number": "DEMO-FD-501054",
+    "loan_number": "DEMO-PL-601462",
+    "policy_numbers": [
+      "DEMO-LI-800578"
+    ],
+    "mf_folio": "DEMO-MF-300986"
+  },
+  "CUST035": {
+    "customer_id": "CUST035",
+    "full_name": "Vivek Menon",
+    "pan": "DEMOI0035E (DEMO)",
+    "employer": "VerveCloud Technologies Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-104795",
+      "DEMO-SB-206755"
+    ],
+    "fd_number": "DEMO-FD-501085",
+    "loan_number": "DEMO-PL-601505",
+    "policy_numbers": [
+      "DEMO-LI-800595"
+    ],
+    "mf_folio": "DEMO-MF-301015"
+  },
+  "CUST036": {
+    "customer_id": "CUST036",
+    "full_name": "Bhavna Bhat",
+    "pan": "DEMOJ0036L (DEMO)",
+    "employer": "Kaveri Digital Labs Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-104932",
+      "DEMO-SB-206948"
+    ],
+    "fd_number": "DEMO-FD-501116",
+    "loan_number": "DEMO-PL-601548",
+    "policy_numbers": [
+      "DEMO-LI-800612"
+    ],
+    "mf_folio": "DEMO-MF-301044"
+  },
+  "CUST037": {
+    "customer_id": "CUST037",
+    "full_name": "Tarun Banerjee",
+    "pan": "DEMOK0037S (DEMO)",
+    "employer": "ApexFin Analytics Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-105069",
+      "DEMO-SB-207141"
+    ],
+    "fd_number": "DEMO-FD-501147",
+    "loan_number": "DEMO-PL-601591",
+    "policy_numbers": [
+      "DEMO-LI-800629"
+    ],
+    "mf_folio": "DEMO-MF-301073"
+  },
+  "CUST038": {
+    "customer_id": "CUST038",
+    "full_name": "Kritika Mehta",
+    "pan": "DEMOL0038Z (DEMO)",
+    "employer": "SaffronGrid Software Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-105206",
+      "DEMO-SB-207334"
+    ],
+    "fd_number": "DEMO-FD-501178",
+    "loan_number": "DEMO-PL-601634",
+    "policy_numbers": [
+      "DEMO-LI-800646"
+    ],
+    "mf_folio": "DEMO-MF-301102"
+  },
+  "CUST039": {
+    "customer_id": "CUST039",
+    "full_name": "Rakesh Shetty",
+    "pan": "DEMOM0039G (DEMO)",
+    "employer": "DeccanData Engineering Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-105343",
+      "DEMO-SB-207527"
+    ],
+    "fd_number": "DEMO-FD-501209",
+    "loan_number": "DEMO-PL-601677",
+    "policy_numbers": [
+      "DEMO-LI-800663"
+    ],
+    "mf_folio": "DEMO-MF-301131"
+  },
+  "CUST040": {
+    "customer_id": "CUST040",
+    "full_name": "Pallavi Sinha",
+    "pan": "DEMON0040N (DEMO)",
+    "employer": "BluePeak Consulting Services Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-105480",
+      "DEMO-SB-207720"
+    ],
+    "fd_number": "DEMO-FD-501240",
+    "loan_number": "DEMO-PL-601720",
+    "policy_numbers": [
+      "DEMO-LI-800680"
+    ],
+    "mf_folio": "DEMO-MF-301160"
+  },
+  "CUST041": {
+    "customer_id": "CUST041",
+    "full_name": "Abhishek Nair",
+    "pan": "DEMOO0041U (DEMO)",
+    "employer": "TechNova Solutions Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-105617",
+      "DEMO-SB-207913"
+    ],
+    "fd_number": "DEMO-FD-501271",
+    "loan_number": "DEMO-PL-601763",
+    "policy_numbers": [
+      "DEMO-LI-800697"
+    ],
+    "mf_folio": "DEMO-MF-301189"
+  },
+  "CUST042": {
+    "customer_id": "CUST042",
+    "full_name": "Simran Kulkarni",
+    "pan": "DEMOP0042B (DEMO)",
+    "employer": "IndusByte Systems India Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-105754",
+      "DEMO-SB-208106"
+    ],
+    "fd_number": "DEMO-FD-501302",
+    "loan_number": "DEMO-PL-601806",
+    "policy_numbers": [
+      "DEMO-LI-800714"
+    ],
+    "mf_folio": "DEMO-MF-301218"
+  },
+  "CUST043": {
+    "customer_id": "CUST043",
+    "full_name": "Mayank Gupta",
+    "pan": "DEMOQ0043I (DEMO)",
+    "employer": "VerveCloud Technologies Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-105891",
+      "DEMO-SB-208299"
+    ],
+    "fd_number": "DEMO-FD-501333",
+    "loan_number": "DEMO-PL-601849",
+    "policy_numbers": [
+      "DEMO-LI-800731"
+    ],
+    "mf_folio": "DEMO-MF-301247"
+  },
+  "CUST044": {
+    "customer_id": "CUST044",
+    "full_name": "Sonal Agarwal",
+    "pan": "DEMOR0044P (DEMO)",
+    "employer": "Kaveri Digital Labs Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-106028",
+      "DEMO-SB-208492"
+    ],
+    "fd_number": "DEMO-FD-501364",
+    "loan_number": "DEMO-PL-601892",
+    "policy_numbers": [
+      "DEMO-LI-800748"
+    ],
+    "mf_folio": "DEMO-MF-301276"
+  },
+  "CUST045": {
+    "customer_id": "CUST045",
+    "full_name": "Akash Chatterjee",
+    "pan": "DEMOS0045W (DEMO)",
+    "employer": "ApexFin Analytics Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-106165",
+      "DEMO-SB-208685"
+    ],
+    "fd_number": "DEMO-FD-501395",
+    "loan_number": "DEMO-PL-601935",
+    "policy_numbers": [
+      "DEMO-LI-800765"
+    ],
+    "mf_folio": "DEMO-MF-301305"
+  },
+  "CUST046": {
+    "customer_id": "CUST046",
+    "full_name": "Preeti Kapoor",
+    "pan": "DEMOT0046D (DEMO)",
+    "employer": "SaffronGrid Software Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-106302",
+      "DEMO-SB-208878"
+    ],
+    "fd_number": "DEMO-FD-501426",
+    "loan_number": "DEMO-PL-601978",
+    "policy_numbers": [
+      "DEMO-LI-800782"
+    ],
+    "mf_folio": "DEMO-MF-301334"
+  },
+  "CUST047": {
+    "customer_id": "CUST047",
+    "full_name": "Yash Pillai",
+    "pan": "DEMOU0047K (DEMO)",
+    "employer": "DeccanData Engineering Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-106439",
+      "DEMO-SB-209071"
+    ],
+    "fd_number": "DEMO-FD-501457",
+    "loan_number": "DEMO-PL-602021",
+    "policy_numbers": [
+      "DEMO-LI-800799"
+    ],
+    "mf_folio": "DEMO-MF-301363"
+  },
+  "CUST048": {
+    "customer_id": "CUST048",
+    "full_name": "Anjali Chopra",
+    "pan": "DEMOV0048R (DEMO)",
+    "employer": "BluePeak Consulting Services Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-106576",
+      "DEMO-SB-209264"
+    ],
+    "fd_number": "DEMO-FD-501488",
+    "loan_number": "DEMO-PL-602064",
+    "policy_numbers": [
+      "DEMO-LI-800816"
+    ],
+    "mf_folio": "DEMO-MF-301392"
+  },
+  "CUST049": {
+    "customer_id": "CUST049",
+    "full_name": "Nitin Verma",
+    "pan": "DEMOW0049Y (DEMO)",
+    "employer": "TechNova Solutions Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-106713",
+      "DEMO-SB-209457"
+    ],
+    "fd_number": "DEMO-FD-501519",
+    "loan_number": "DEMO-PL-602107",
+    "policy_numbers": [
+      "DEMO-LI-800833"
+    ],
+    "mf_folio": "DEMO-MF-301421"
+  },
+  "CUST050": {
+    "customer_id": "CUST050",
+    "full_name": "Rashmi Patel",
+    "pan": "DEMOX0050F (DEMO)",
+    "employer": "IndusByte Systems India Pvt. Ltd.",
+    "accounts": [
+      "DEMO-SB-106850",
+      "DEMO-SB-209650"
+    ],
+    "fd_number": "DEMO-FD-501550",
+    "loan_number": "DEMO-PL-602150",
+    "policy_numbers": [
+      "DEMO-LI-800850"
+    ],
+    "mf_folio": "DEMO-MF-301450"
+  }
+}

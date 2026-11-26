@@ -1,0 +1,210 @@
+{
+  "dataset_id": "DEMO_001",
+  "generated_for": "ArthaLens Entity Extraction Benchmark",
+  "reference_date": "2026-05-15",
+  "customer_profile": {
+    "name": "Ananya Sharma",
+    "age": 28,
+    "dob": "1997-08-14",
+    "occupation": "Software Engineer",
+    "employer": "TechNova Solutions Pvt. Ltd.",
+    "city": "Bengaluru, Karnataka",
+    "pan": "DEMOP0001A (DEMO)",
+    "aadhaar_masked": "XXXX-XXXX-0001 (DEMO)",
+    "sources": [
+      {"document": "Bank_Statement.pdf", "pages": [1]},
+      {"document": "AIS_Report.pdf", "pages": [1]},
+      {"document": "Form_16.pdf", "pages": [1, 2]},
+      {"document": "Insurance_Policy.pdf", "pages": [1]},
+      {"document": "FD_Certificate.pdf", "pages": [1]},
+      {"document": "Loan_Statement.pdf", "pages": [1]}
+    ]
+  },
+  "entities": {
+    "employer": {
+      "name": "TechNova Solutions Pvt. Ltd.",
+      "pan": "DEMOC0002E (DEMO)",
+      "tan": "DEMOT0001B (DEMO)",
+      "address": "Tower B, EcoSpace Business Park, Outer Ring Road, Bellandur, Bengaluru, Karnataka – 560103 (DEMO)",
+      "signatory": "Rajesh Nair (Head of Finance & Payroll)",
+      "sources": [
+        {"document": "Form_16.pdf", "pages": [1, 2]},
+        {"document": "AIS_Report.pdf", "pages": [1]},
+        {"document": "Bank_Statement.pdf", "pages": [1, 2, 3, 4]}
+      ]
+    },
+    "bank_accounts": [
+      {
+        "entity_id": "BA_001",
+        "bank_name": "Horizon Trust Bank Ltd. (DEMO)",
+        "account_number": "DEMO-SB-1004582910",
+        "ifsc": "DEMO0HTB001",
+        "account_type": "Resident Savings (Salary)",
+        "status": "Verified via Uploaded Statement & AIS",
+        "opening_balance_inr": 220000.0,
+        "closing_balance_inr": 482807.92,
+        "fy2526_interest_inr": 7200.0,
+        "sources": [
+          {"document": "Bank_Statement.pdf", "pages": [1, 2, 3, 4]},
+          {"document": "AIS_Report.pdf", "pages": [2]},
+          {"document": "Insurance_Policy.pdf", "pages": [1]},
+          {"document": "FD_Certificate.pdf", "pages": [1, 2]},
+          {"document": "Loan_Statement.pdf", "pages": [1]}
+        ]
+      },
+      {
+        "entity_id": "BA_002",
+        "bank_name": "MetroCivic Co-operative Bank Ltd. (DEMO)",
+        "account_number": "DEMO-SB-77319044",
+        "entity_code": "DEMOMCB009",
+        "account_type": "Savings Account",
+        "status": "Discovered through AIS – account ownership and current status need verification.",
+        "fy2526_interest_inr": 4850.0,
+        "sources": [
+          {"document": "AIS_Report.pdf", "pages": [2]}
+        ]
+      }
+    ],
+    "fixed_deposits": [
+      {
+        "entity_id": "FD_001",
+        "bank_name": "Horizon Trust Bank Ltd. (DEMO)",
+        "fd_account_number": "DEMO-FD-902184",
+        "linked_savings_account": "DEMO-SB-1004582910",
+        "principal_inr": 250000.0,
+        "interest_rate_percent": 7.2,
+        "deposit_date": "2025-06-25",
+        "maturity_date": "2026-06-25",
+        "maturity_amount_inr": 268492.0,
+        "payout_frequency": "On Maturity (Cumulative Reinvestment)",
+        "auto_renewal": false,
+        "nominee": "Vikram Sharma (Brother, 100%)",
+        "fy2526_accrued_interest_inr": 14057.0,
+        "sources": [
+          {"document": "FD_Certificate.pdf", "pages": [1, 2]},
+          {"document": "AIS_Report.pdf", "pages": [1, 2]},
+          {"document": "Bank_Statement.pdf", "pages": [2]}
+        ]
+      }
+    ],
+    "insurance_policies": [
+      {
+        "entity_id": "INS_001",
+        "insurer": "SurakshaGuard Life Insurance Co. Ltd. (DEMO)",
+        "plan_name": "SurakshaGuard Term Assure Plus",
+        "policy_number": "DEMO-LI-8841209",
+        "commencement_date": "2023-06-10",
+        "maturity_date": "2053-06-10",
+        "policy_term_years": 30,
+        "sum_assured_inr": 10000000.0,
+        "modal_premium_inr": 2200.0,
+        "payment_frequency": "Monthly",
+        "annual_premium_inr": 26400.0,
+        "status": "IN FORCE",
+        "nominee_present": false,
+        "nominee_section_page": 2,
+        "sources": [
+          {"document": "Insurance_Policy.pdf", "pages": [1, 2]},
+          {"document": "Bank_Statement.pdf", "pages": [1, 2, 3]},
+          {"document": "Form_16.pdf", "pages": [2]}
+        ]
+      }
+    ],
+    "loans": [
+      {
+        "entity_id": "LN_001",
+        "lender": "Crestline FinServe Ltd. (DEMO)",
+        "loan_account_number": "DEMO-PL-5509123",
+        "loan_type": "Unsecured Personal Loan",
+        "original_amount_inr": 450000.0,
+        "commencement_date": "2024-10-05",
+        "interest_rate_percent": 10.8,
+        "tenure_months": 36,
+        "monthly_emi_inr": 14689.84,
+        "fy2526_opening_principal_inr": 384707.22,
+        "fy2526_closing_principal_inr": 243104.22,
+        "outstanding_principal_2026_05_15_inr": 217987.9,
+        "upcoming_emi_dates": ["2026-06-05", "2026-07-05", "2026-08-05"],
+        "sources": [
+          {"document": "Loan_Statement.pdf", "pages": [1, 2]},
+          {"document": "Bank_Statement.pdf", "pages": [1, 2, 3]}
+        ]
+      }
+    ],
+    "income_and_tax": {
+      "form16_gross_salary_inr": 1142400.0,
+      "ais_reported_salary_inr": 1160400.0,
+      "salary_reconciliation_diff_inr": 18000.0,
+      "net_monthly_bank_salary_inr": 84400.0,
+      "form16_hra_exemption_inr": 180000.0,
+      "form16_standard_deduction_inr": 50000.0,
+      "form16_professional_tax_inr": 2400.0,
+      "form16_80c_deduction_inr": 150000.0,
+      "form16_80d_deduction_inr": 22500.0,
+      "form16_taxable_income_inr": 737500.0,
+      "tds_deducted_inr": 62400.0,
+      "dividend_income_inr": 4250.0,
+      "sources": [
+        {"document": "Form_16.pdf", "pages": [1, 2]},
+        {"document": "AIS_Report.pdf", "pages": [1, 2]},
+        {"document": "Bank_Statement.pdf", "pages": [1, 2, 3, 4]}
+      ]
+    },
+    "recurring_expenses_and_charges": [
+      {
+        "name": "StreamFlix India",
+        "category": "subscription_streaming",
+        "frequency": "monthly",
+        "amount_inr": 649.0,
+        "annual_cost_inr": 7788.0,
+        "document": "Bank_Statement.pdf",
+        "pages": [1, 2, 3]
+      },
+      {
+        "name": "CloudNotes Pro",
+        "category": "subscription_productivity",
+        "frequency": "monthly",
+        "amount_inr": 499.0,
+        "annual_cost_inr": 5988.0,
+        "document": "Bank_Statement.pdf",
+        "pages": [1, 2, 3, 4]
+      },
+      {
+        "name": "TuneWave Music",
+        "category": "subscription_streaming",
+        "frequency": "monthly",
+        "amount_inr": 199.0,
+        "annual_cost_inr": 2388.0,
+        "document": "Bank_Statement.pdf",
+        "pages": [1, 2, 3, 4]
+      },
+      {
+        "name": "SMS Alert Service Charge",
+        "category": "bank_fee",
+        "frequency": "monthly",
+        "amount_inr": 15.0,
+        "annual_cost_inr": 180.0,
+        "document": "Bank_Statement.pdf",
+        "pages": [1, 2, 3, 4]
+      },
+      {
+        "name": "Annual Account Maintenance Charge",
+        "category": "bank_fee",
+        "frequency": "annual",
+        "amount_inr": 590.0,
+        "annual_cost_inr": 590.0,
+        "document": "Bank_Statement.pdf",
+        "pages": [2]
+      },
+      {
+        "name": "House Rent (Ramesh Kulkarni)",
+        "category": "housing_rent",
+        "frequency": "monthly",
+        "amount_inr": 19500.0,
+        "annual_cost_inr": 234000.0,
+        "document": "Bank_Statement.pdf",
+        "pages": [1, 2, 3]
+      }
+    ]
+  }
+}

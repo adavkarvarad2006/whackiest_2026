@@ -217,3 +217,41 @@ ArthaLens provides informational insights based on uploaded documents. It does n
 ---
 
 **ArthaLens – Because financial security starts with knowing what you might have overlooked.**
+
+
+---
+
+## Integrated Full-Stack & RAG Implementation
+
+### Directory Layout
+
+- `frontend/` — Next.js 16 + TypeScript + Tailwind editorial UI (Dashboard, Documents, Financial Map, Nominee Coverage, Findings, Evidence Drawer, Actions, Ask ArthaLens Chat, Settings).
+- `backend/` — FastAPI + SQLAlchemy + pgvector + PyMuPDF + LangChain Text Splitters + Sentence Transformers (`all-MiniLM-L6-v2`) + Groq API LLM integration.
+- `ArthaLens_Demo_Dataset/` — 6 interconnected synthetic demo PDFs (`Ananya Sharma`) + `ground_truth.json` + `chatbot_test_questions.json`.
+- `arthalens_dataset/` — Large-scale 50-customer / 500-PDF synthetic financial knowledge base, batch ingestion pipeline (`ingestion/`), PostgreSQL schema (`database/schema.sql`), and 350-question RAG evaluation suite (`evaluation/`).
+- `tests/` — Automated FastAPI + RAG + SQL + user-isolation `pytest` suite.
+- `docker-compose.yml` — Orchestrates `pgvector/pgvector:pg16`, FastAPI backend (`:8000`), and Next.js frontend (`:3000`).
+
+### Quick Start (Docker Compose)
+
+1. Copy `.env.example` to `.env` and set `GROQ_API_KEY` and `JWT_SECRET_KEY`:
+   ```bash
+   cp .env.example .env
+   ```
+2. Launch PostgreSQL (`pgvector`), FastAPI backend, and Next.js frontend:
+   ```bash
+   docker compose up --build
+   ```
+3. Open `http://localhost:3000`, click **Explore Live Demo Account** (or register and upload PDFs from `ArthaLens_Demo_Dataset/Documents/`), and query **Ask ArthaLens**.
+
+### Testing & 500-PDF RAG Evaluation
+
+- Run backend integration tests:
+  ```bash
+  pytest tests/test_arthalens.py -v
+  ```
+- Ingest all 500 PDFs and run the 350-question evaluation benchmark:
+  ```bash
+  python arthalens_dataset/ingestion/ingest_all.py --database-url "$DATABASE_URL"
+  python arthalens_dataset/evaluation/evaluate_rag.py --database-url "$DATABASE_URL"
+  ```
