@@ -123,3 +123,31 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 );
 
 CREATE INDEX IF NOT EXISTS ix_chat_messages_conv_user ON chat_messages(conversation_id, user_id);
+
+CREATE TABLE IF NOT EXISTS extracted_entities (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    document_id INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    page_number INTEGER NOT NULL DEFAULT 1,
+    entity_type VARCHAR(60) NOT NULL,
+    entity_value VARCHAR(255) NOT NULL,
+    supporting_text TEXT,
+    confidence VARCHAR(40) NOT NULL DEFAULT 'HIGH',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS ix_entities_user_type ON extracted_entities(user_id, entity_type);
+CREATE INDEX IF NOT EXISTS ix_entities_user_doc ON extracted_entities(user_id, document_id);
+
+CREATE TABLE IF NOT EXISTS finding_progress (
+    id SERIAL PRIMARY KEY,
+    finding_id INTEGER NOT NULL REFERENCES findings(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    completed_steps JSONB NOT NULL DEFAULT '[]'::jsonb,
+    verification_evidence TEXT,
+    nominee_name VARCHAR(200),
+    feedback_note TEXT,
+    resolved_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_finding_progress_user UNIQUE (finding_id, user_id)
+);

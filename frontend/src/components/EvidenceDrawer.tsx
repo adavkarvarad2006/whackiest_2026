@@ -9,9 +9,11 @@ import {
   AlertTriangle,
   ThumbsDown,
   Wrench,
+  ExternalLink,
 } from "lucide-react";
 import { FindingItem } from "@/lib/types";
 import { api } from "@/lib/api";
+import { PdfViewerModal } from "./PdfViewerModal";
 
 interface EvidenceDrawerProps {
   finding: FindingItem | null;
@@ -29,11 +31,43 @@ export function EvidenceDrawer({
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [feedbackError, setFeedbackError] = useState("");
+  const [pdfPreview, setPdfPreview] = useState<{
+    documentId: string | number | null | undefined;
+    filename: string;
+    page: number;
+    evidence?: string;
+  } | null>(null);
+
+  const openOriginalPdf = async (
+    docIdRaw: string | null | undefined,
+    filename: string,
+    page: number,
+    snippet?: string | null
+  ) => {
+    let docId = docIdRaw;
+    if (!docId && filename) {
+      try {
+        const docs = await api.listDocuments();
+        const m = docs.find((d) => d.filename.toLowerCase() === filename.toLowerCase());
+        if (m) docId = m.id;
+      } catch {
+        // handled cleanly by PdfViewerModal
+      }
+    }
+    setPdfPreview({
+      documentId: docId,
+      filename: filename || "document.pdf",
+      page: page || 1,
+      evidence: snippet || undefined,
+    });
+  };
 
   const handleFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!finding) return;
     setSubmitting(true);
+    setFeedbackError("");
     try {
       await api.reportWrong(
         finding.id,
@@ -43,12 +77,15 @@ export function EvidenceDrawer({
       setReason("");
       onUpdated();
       onClose();
+    } catch (err: unknown) {
+      setFeedbackError(err instanceof Error ? err.message : "Could not submit feedback.");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
+    <>
     <AnimatePresence>
       {finding && (
         <div className="fixed inset-0 z-50 flex justify-end">
@@ -109,22 +146,22 @@ export function EvidenceDrawer({
               {/* Confirmed Fact vs Possible Finding Banner */}
               <div
                 className={`rounded-2xl border p-4 flex items-start gap-3 ${
-                  finding.evidence.is_confirmed_fact
+                  finding.evidence?.is_confirmed_fact
                     ? "border-[#111111]/20 bg-[#F7F7F7]"
                     : "border-amber-200 bg-amber-50/50"
                 }`}
               >
-                {finding.evidence.is_confirmed_fact ? (
+                {finding.evidence?.is_confirmed_fact ? (
                   <CheckCircle2 className="h-4 w-4 text-[#111111] mt-0.5 shrink-0" />
                 ) : (
                   <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                 )}
                 <div>
                   <p className="text-xs font-semibold text-[#111111]">
-                    {finding.evidence.fact_label}
+                    {finding.evidence?.fact_label || "Needs Verification"}
                   </p>
                   <p className="mt-1 text-xs text-[#777777] leading-relaxed">
-                    {finding.evidence.why_flagged}
+                    {finding.evidence?.why_flagged || "Review supporting source evidence."}
                   </p>
                 </div>
               </div>
@@ -135,38 +172,72 @@ export function EvidenceDrawer({
                   Primary Source Evidence
                 </p>
                 <div className="rounded-2xl border border-[#E8E8E8] bg-[#F7F7F7] p-4 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-xs gap-2">
                     <span className="inline-flex items-center gap-1.5 font-medium text-[#111111]">
                       <FileText className="h-3.5 w-3.5" />
-                      {finding.evidence.source_document}
+                      {finding.evidence?.source_document || "Uploaded Document"}
                     </span>
-                    <span className="text-[#777777] tabular-nums">
-                      Page {finding.evidence.page_number}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#777777] tabular-nums">
+                        Page {finding.evidence?.page_number ?? 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openOriginalPdf(
+                            finding.evidence?.source_document_id,
+                            finding.evidence?.source_document || "document.pdf",
+                            finding.evidence?.page_number ?? 1,
+                            finding.evidence?.extracted_text
+                          )
+                        }
+                        className="inline-flex items-center gap-1 rounded-full border border-[#E8E8E8] bg-white px-2.5 py-0.5 text-[11px] font-medium text-[#111111] hover:border-[#090909]"
+                      >
+                        Open PDF
+                        <ExternalLink className="h-3 w-3" />
+                      </button>
+                    </div>
                   </div>
                   <pre className="whitespace-pre-wrap font-mono text-xs text-[#111111] bg-white border border-[#E8E8E8] rounded-xl p-3 leading-relaxed">
-                    {finding.evidence.extracted_text}
+                    {finding.evidence?.extracted_text || "No extracted snippet available."}
                   </pre>
                 </div>
               </div>
 
               {/* Cross-Document Matching Evidence */}
-              {finding.evidence.matching_document && (
+              {finding.evidence?.matching_document && (
                 <div className="space-y-2.5">
                   <p className="text-xs font-semibold uppercase tracking-wider text-[#777777]">
                     Cross-Checked Document
                   </p>
                   <div className="rounded-2xl border border-[#E8E8E8] bg-white p-4 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center justify-between text-xs gap-2">
                       <span className="inline-flex items-center gap-1.5 font-medium text-[#111111]">
                         <FileText className="h-3.5 w-3.5" />
                         {finding.evidence.matching_document}
                       </span>
-                      {finding.evidence.matching_page && (
-                        <span className="text-[#777777] tabular-nums">
-                          Page {finding.evidence.matching_page}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {finding.evidence.matching_page && (
+                          <span className="text-[#777777] tabular-nums">
+                            Page {finding.evidence.matching_page}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openOriginalPdf(
+                              finding.evidence?.matching_document_id,
+                              finding.evidence?.matching_document || "document.pdf",
+                              finding.evidence?.matching_page ?? 1,
+                              finding.evidence?.matching_text
+                            )
+                          }
+                          className="inline-flex items-center gap-1 rounded-full border border-[#E8E8E8] bg-[#F7F7F7] px-2.5 py-0.5 text-[11px] font-medium text-[#111111] hover:border-[#090909]"
+                        >
+                          Open PDF
+                          <ExternalLink className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
                     <p className="text-xs text-[#777777] leading-relaxed">
                       {finding.evidence.matching_text}
@@ -203,6 +274,9 @@ export function EvidenceDrawer({
                     placeholder="e.g., Nominee was added last month on an updated endorsement..."
                     className="w-full rounded-xl border border-[#E8E8E8] bg-white p-2.5 text-xs text-[#111111] focus:border-[#090909] focus:outline-none"
                   />
+                  {feedbackError && (
+                    <p className="text-xs text-red-600">{feedbackError}</p>
+                  )}
                   <div className="flex items-center gap-2 justify-end">
                     <button
                       type="button"
@@ -249,5 +323,15 @@ export function EvidenceDrawer({
         </div>
       )}
     </AnimatePresence>
+
+    <PdfViewerModal
+      open={Boolean(pdfPreview)}
+      documentId={pdfPreview?.documentId}
+      filename={pdfPreview?.filename || "document.pdf"}
+      initialPage={pdfPreview?.page || 1}
+      evidence={pdfPreview?.evidence}
+      onClose={() => setPdfPreview(null)}
+    />
+    </>
   );
 }

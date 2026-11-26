@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { NomineeAssetTile } from "@/lib/types";
 import { formatINR } from "@/lib/api";
 
@@ -8,16 +8,22 @@ interface NomineeCoverageCardProps {
   coveragePct: number;
   counts: { GREEN: number; AMBER: number; RED: number };
   tiles: NomineeAssetTile[];
+  onTileClick?: (tile: NomineeAssetTile) => void;
 }
 
 export function NomineeCoverageCard({
   coveragePct,
   counts,
   tiles,
+  onTileClick,
 }: NomineeCoverageCardProps) {
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "GREEN" | "AMBER" | "RED">("ALL");
   const radius = 44;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference - (coveragePct / 100) * circumference;
+
+  const visibleTiles =
+    statusFilter === "ALL" ? tiles : tiles.filter((t) => t.status === statusFilter);
 
   return (
     <div className="rounded-3xl border border-[#E8E8E8] bg-white p-6 sm:p-7">
@@ -30,19 +36,54 @@ export function NomineeCoverageCard({
             Never marked GREEN based on assumptions — requires explicit confirmation in uploaded documents.
           </p>
 
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs">
-            <span className="inline-flex items-center gap-1.5 font-medium text-[#111111]">
-              <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
-              GREEN ({counts.GREEN}) Confirmed
-            </span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-[#111111]">
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-              AMBER ({counts.AMBER}) Indirect
-            </span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-[#111111]">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-600" />
-              RED ({counts.RED}) Missing
-            </span>
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => setStatusFilter("ALL")}
+              className={`rounded-full border px-2.5 py-1 font-medium transition-colors ${
+                statusFilter === "ALL"
+                  ? "bg-[#090909] text-white border-[#090909]"
+                  : "bg-[#F7F7F7] text-[#111111] border-[#E8E8E8] hover:border-[#090909]"
+              }`}
+            >
+              All ({tiles.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter((s) => (s === "GREEN" ? "ALL" : "GREEN"))}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium transition-colors ${
+                statusFilter === "GREEN"
+                  ? "bg-[#090909] text-white border-[#090909]"
+                  : "bg-[#F7F7F7] text-[#111111] border-[#E8E8E8] hover:border-[#090909]"
+              }`}
+            >
+              <span className="h-2 w-2 rounded-full bg-green-600" />
+              GREEN ({counts.GREEN})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter((s) => (s === "AMBER" ? "ALL" : "AMBER"))}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium transition-colors ${
+                statusFilter === "AMBER"
+                  ? "bg-[#090909] text-white border-[#090909]"
+                  : "bg-[#F7F7F7] text-[#111111] border-[#E8E8E8] hover:border-[#090909]"
+              }`}
+            >
+              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              AMBER ({counts.AMBER})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter((s) => (s === "RED" ? "ALL" : "RED"))}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-medium transition-colors ${
+                statusFilter === "RED"
+                  ? "bg-[#090909] text-white border-[#090909]"
+                  : "bg-[#F7F7F7] text-[#111111] border-[#E8E8E8] hover:border-[#090909]"
+              }`}
+            >
+              <span className="h-2 w-2 rounded-full bg-red-600" />
+              RED ({counts.RED})
+            </button>
           </div>
         </div>
 
@@ -80,7 +121,7 @@ export function NomineeCoverageCard({
 
       {/* Category-wise Asset Tiles */}
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        {tiles.map((tile) => {
+        {visibleTiles.map((tile) => {
           const badgeStyle =
             tile.status === "GREEN"
               ? "bg-green-50 text-green-700 border-green-200"
@@ -89,9 +130,13 @@ export function NomineeCoverageCard({
               : "bg-red-50 text-red-700 border-red-200";
 
           return (
-            <div
+            <button
               key={tile.id}
-              className="rounded-2xl border border-[#E8E8E8] bg-[#F7F7F7] p-4 flex flex-col justify-between gap-2"
+              type="button"
+              onClick={() => onTileClick?.(tile)}
+              className={`text-left rounded-2xl border border-[#E8E8E8] bg-[#F7F7F7] p-4 flex flex-col justify-between gap-2 transition-colors ${
+                onTileClick ? "hover:border-[#090909] cursor-pointer" : "cursor-default"
+              }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -116,7 +161,7 @@ export function NomineeCoverageCard({
                   {formatINR(tile.value)}
                 </span>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

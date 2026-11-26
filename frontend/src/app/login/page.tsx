@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Sparkles } from "lucide-react";
@@ -13,6 +13,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("arthalens123");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoHighlight, setDemoHighlight] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("demo") === "1") {
+        setDemoHighlight(true);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,11 +90,21 @@ export default function LoginPage() {
             Sign in to your ArthaLens workspace or explore with synthetic demo data.
           </p>
 
+          {demoHighlight && (
+            <div className="mt-4 rounded-xl border border-[#090909]/20 bg-[#F7F7F7] px-4 py-2.5 text-xs text-[#111111]">
+              Demo preview selected — click below to launch the synthetic workspace immediately.
+            </div>
+          )}
+
           <button
             type="button"
             onClick={handleDemo}
             disabled={loading}
-            className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#111111] bg-[#F7F7F7] px-4 py-3 text-sm font-medium text-[#111111] hover:bg-[#EFEFEF] transition-colors disabled:opacity-50"
+            className={`mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-colors disabled:opacity-50 ${
+              demoHighlight
+                ? "border-[#090909] bg-[#090909] text-white hover:bg-neutral-800"
+                : "border-[#111111] bg-[#F7F7F7] text-[#111111] hover:bg-[#EFEFEF]"
+            }`}
           >
             <Sparkles className="h-4 w-4" />
             Explore Live Demo Account (Synthetic Data)

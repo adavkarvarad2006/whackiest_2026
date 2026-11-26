@@ -1,25 +1,33 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  Download,
   FileText,
   History,
+  Loader2,
   MessageSquare,
   Plus,
+  Search,
   Send,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
+import { PdfViewerModal } from "@/components/PdfViewerModal";
 import { api } from "@/lib/api";
-import { ChatConfidence, ChatConversation, ChatMessage } from "@/lib/types";
+import { ChatConfidence, ChatConversation, ChatMessage, ChatSource } from "@/lib/types";
 
-const SUGGESTED_QUESTIONS = [
-  "Do I have any missing nominees?",
-  "What recurring leaks were detected in my statements?",
-  "Does my Form 16 match my AIS tax summary?",
-  "Which financial documents need immediate review?",
+const DEFAULT_SUGGESTED_QUESTIONS = [
+  "Which policies don't have nominees?",
+  "Where is my money getting deducted every month?",
+  "AIS aur Form 16 mein koi mismatch hai kya?",
+  "Am I financially prepared?",
 ];
 
 function createConversationId(): string {
@@ -56,17 +64,116 @@ export default function AskArthaLensPage() {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>(DEFAULT_SUGGESTED_QUESTIONS);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [historySearch, setHistorySearch] = useState("");
+  const [chatError, setChatError] = useState("");
+  const [confirmDeleteConv, setConfirmDeleteConv] = useState<ChatConversation | null>(null);
+  const [deletingConv, setDeletingConv] = useState(false);
+  const [activePdf, setActivePdf] = useState<{
+    documentId: string | number | null | undefined;
+    filename: string;
+    page: number;
+    evidence?: string;
+  } | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportNotice, setExportNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const exportMenuRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!exportOpen) return;
+    const onOutsideClick = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setExportOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExportOpen(false);
+    };
+    document.addEventListener("mousedown", onOutsideClick);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onOutsideClick);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [exportOpen]);
+
+  const handleExport = async (scope: "single" | "all", format: "pdf" | "txt" | "json") => {
+    if (exporting) return;
+    setExportOpen(false);
+    setExportNotice(null);
+    setExporting(true);
+
+    const activeConv = conversations.find((c) => c.conversation_id === activeId);
+    const titlePart = (activeConv?.title || "Conversation").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40) || "Conversation";
+    const fallbackFilename =
+      scope === "single"
+        ? `ArthaLens_Chat_${titlePart}.${format}`
+        : format === "txt"
+        ? "ArthaLens_Chat_History.txt"
+        : `ArthaLens_All_Conversations.${format}`;
+
+    try {
+      const { blob, filename } = await api.exportChatHistory({
+        scope,
+        format,
+        conversationId: scope === "single" ? activeId : undefined,
+        fallbackFilename,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setExportNotice({ type: "success", text: `Exported ${filename}` });
+    } catch (err: unknown) {
+      setExportNotice({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to export chat history.",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const openCitationPdf = async (src: ChatSource) => {
+    const filename = src.filename || src.document;
+    const page = src.page_number ?? src.page ?? 1;
+    const evidence = src.evidence || src.snippet;
+    let docId = src.document_id;
+
+    // Fallback lookup by filename from user's uploaded documents if older history lacks document_id
+    if (!docId && filename) {
+      try {
+        const docs = await api.listDocuments();
+        const match = docs.find((d) => d.filename.toLowerCase() === filename.toLowerCase());
+        if (match) docId = match.id;
+      } catch {
+        // Handled cleanly inside PdfViewerModal if unavailable
+      }
+    }
+
+    setActivePdf({
+      documentId: docId,
+      filename,
+      page,
+      evidence,
+    });
+  };
 
   const loadHistory = useCallback(async () => {
     try {
       const history = await api.getChatHistory();
       setConversations(history);
-    } catch {
-      // Ignore history load errors
+    } catch (err: unknown) {
+      setChatError(err instanceof Error ? err.message : "Unable to load chat history.");
     } finally {
       setLoadingHistory(false);
     }
@@ -75,7 +182,43 @@ export default function AskArthaLensPage() {
   useEffect(() => {
     setActiveId(createConversationId());
     loadHistory();
+    api
+      .getChatSuggestions()
+      .then((list) => {
+        if (list.length > 0) setSuggestedQuestions(list);
+      })
+      .catch(() => {
+        // fallback cleanly to DEFAULT_SUGGESTED_QUESTIONS
+      });
   }, [loadHistory]);
+
+  const filteredConversations = useMemo(() => {
+    const q = historySearch.trim().toLowerCase();
+    if (!q) return conversations;
+    return conversations.filter((c) => {
+      if (c.title.toLowerCase().includes(q)) return true;
+      return c.messages.some((m) => m.content.toLowerCase().includes(q));
+    });
+  }, [conversations, historySearch]);
+
+  const handleDeleteConversation = async () => {
+    if (!confirmDeleteConv || deletingConv) return;
+    setDeletingConv(true);
+    setChatError("");
+    try {
+      await api.deleteConversation(confirmDeleteConv.conversation_id);
+      if (activeId === confirmDeleteConv.conversation_id) {
+        setActiveId(createConversationId());
+        setMessages([]);
+      }
+      setConfirmDeleteConv(null);
+      await loadHistory();
+    } catch (err: unknown) {
+      setChatError(err instanceof Error ? err.message : "Failed to delete conversation.");
+    } finally {
+      setDeletingConv(false);
+    }
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -108,6 +251,7 @@ export default function AskArthaLensPage() {
 
     setMessages((prev) => [...prev, userMsg]);
     if (!questionText) setInput("");
+    setChatError("");
     setSending(true);
 
     try {
@@ -116,13 +260,24 @@ export default function AskArthaLensPage() {
         id: `local_a_${Date.now()}`,
         role: "assistant",
         content: res.answer,
+        intent: res.intent,
+        language: res.language,
         confidence: res.confidence,
         sources: res.sources,
+        needs_clarification: res.needs_clarification,
+        clarification_options: res.clarification_options,
+        followup_suggestions: res.followup_suggestions,
         created_at: new Date().toISOString(),
         is_mock: res.is_mock,
       };
       setMessages((prev) => [...prev, assistantMsg]);
       await loadHistory();
+    } catch (err: unknown) {
+      setChatError(
+        err instanceof Error
+          ? err.message
+          : "Unable to get a response from Ask ArthaLens right now."
+      );
     } finally {
       setSending(false);
     }
@@ -151,40 +306,71 @@ export default function AskArthaLensPage() {
             </button>
           </div>
 
+          {conversations.length > 0 && (
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-[#777777]" />
+              <input
+                type="text"
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                placeholder="Search history..."
+                className="w-full rounded-xl border border-[#E8E8E8] bg-[#F7F7F7] pl-8 pr-3 py-1.5 text-xs text-[#111111] focus:border-[#090909] focus:bg-white focus:outline-none"
+              />
+            </div>
+          )}
+
           {loadingHistory ? (
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-12 rounded-2xl bg-[#F7F7F7] animate-pulse" />
               ))}
             </div>
-          ) : conversations.length === 0 ? (
+          ) : filteredConversations.length === 0 ? (
             <p className="text-xs text-[#777777] py-4">
-              No previous conversations yet. Ask a question to start.
+              {conversations.length === 0
+                ? "No previous conversations yet. Ask a question to start."
+                : "No conversations match your search."}
             </p>
           ) : (
             <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
-              {conversations.map((conv) => {
+              {filteredConversations.map((conv) => {
                 const isActive = conv.conversation_id === activeId;
                 return (
-                  <button
+                  <div
                     key={conv.conversation_id}
-                    type="button"
-                    onClick={() => selectConversation(conv)}
-                    className={`w-full text-left rounded-2xl px-3.5 py-2.5 transition-colors border ${
+                    className={`group flex items-center justify-between gap-1.5 rounded-2xl px-3.5 py-2.5 transition-colors border ${
                       isActive
                         ? "bg-[#090909] text-white border-[#090909]"
                         : "bg-[#F7F7F7] text-[#111111] border-transparent hover:border-[#E8E8E8]"
                     }`}
                   >
-                    <p className="text-xs font-medium truncate">{conv.title}</p>
-                    <p
-                      className={`mt-0.5 text-[10px] ${
-                        isActive ? "text-white/60" : "text-[#777777]"
+                    <button
+                      type="button"
+                      onClick={() => selectConversation(conv)}
+                      className="flex-1 min-w-0 text-left"
+                    >
+                      <p className="text-xs font-medium truncate">{conv.title}</p>
+                      <p
+                        className={`mt-0.5 text-[10px] ${
+                          isActive ? "text-white/60" : "text-[#777777]"
+                        }`}
+                      >
+                        {conv.messages.length} messages
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeleteConv(conv)}
+                      aria-label={`Delete ${conv.title}`}
+                      className={`rounded-lg p-1 transition-colors shrink-0 ${
+                        isActive
+                          ? "text-white/60 hover:text-white"
+                          : "text-[#888888] hover:text-red-600"
                       }`}
                     >
-                      {conv.messages.length} messages
-                    </p>
-                  </button>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -193,6 +379,83 @@ export default function AskArthaLensPage() {
 
         {/* Main Chat Area */}
         <div className="lg:col-span-8 xl:col-span-9 rounded-3xl border border-[#E8E8E8] bg-white flex flex-col min-h-[600px] max-h-[75vh]">
+          {/* Active Conversation Header & Export Controls */}
+          <div className="border-b border-[#E8E8E8] px-5 sm:px-7 py-3.5 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-[#111111] truncate">
+                {conversations.find((c) => c.conversation_id === activeId)?.title || "New Conversation"}
+              </p>
+              <p className="text-[11px] text-[#777777]">
+                {messages.length > 0 ? `${messages.length} message(s) in thread` : "Select a thread or ask a question"}
+              </p>
+            </div>
+
+            <div className="relative flex items-center gap-2" ref={exportMenuRef}>
+              {exportNotice && (
+                <span
+                  className={`hidden sm:inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] ${
+                    exportNotice.type === "success"
+                      ? "border-[#E8E8E8] bg-[#F7F7F7] text-[#111111]"
+                      : "border-red-200 bg-red-50 text-red-700"
+                  }`}
+                >
+                  {exportNotice.type === "success" && <CheckCircle2 className="h-3 w-3 text-[#111111]" />}
+                  {exportNotice.text}
+                </span>
+              )}
+
+              <button
+                type="button"
+                disabled={exporting}
+                onClick={() => setExportOpen((o) => !o)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#E8E8E8] bg-white px-3.5 py-1.5 text-xs font-medium text-[#111111] hover:border-[#090909] disabled:opacity-50 transition-colors"
+              >
+                {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                <span>{exporting ? "Exporting..." : "Export"}</span>
+                <ChevronDown className="h-3 w-3 text-[#777777]" />
+              </button>
+
+              {exportOpen && (
+                <div className="absolute right-0 top-10 z-30 w-60 rounded-2xl border border-[#E8E8E8] bg-white p-2 shadow-xl">
+                  <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#777777]">
+                    Current Conversation
+                  </div>
+                  {(["pdf", "txt", "json"] as const).map((fmt) => {
+                    const hasSavedCurrent = conversations.some((c) => c.conversation_id === activeId);
+                    return (
+                      <button
+                        key={`single-${fmt}`}
+                        type="button"
+                        disabled={!hasSavedCurrent}
+                        onClick={() => handleExport("single", fmt)}
+                        className="w-full text-left rounded-xl px-3 py-2 text-xs text-[#111111] hover:bg-[#F7F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Export as {fmt.toUpperCase()}
+                      </button>
+                    );
+                  })}
+
+                  <div className="my-1.5 h-px bg-[#E8E8E8]" />
+
+                  <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#777777]">
+                    Export All Conversations
+                  </div>
+                  {(["pdf", "txt", "json"] as const).map((fmt) => (
+                    <button
+                      key={`all-${fmt}`}
+                      type="button"
+                      disabled={conversations.length === 0}
+                      onClick={() => handleExport("all", fmt)}
+                      className="w-full text-left rounded-xl px-3 py-2 text-xs text-[#111111] hover:bg-[#F7F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Export All as {fmt.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-5">
             {messages.length === 0 ? (
@@ -208,7 +471,7 @@ export default function AskArthaLensPage() {
                 </p>
 
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full">
-                  {SUGGESTED_QUESTIONS.map((q) => (
+                  {suggestedQuestions.map((q) => (
                     <button
                       key={q}
                       type="button"
@@ -251,21 +514,70 @@ export default function AskArthaLensPage() {
                             </span>
                           )}
 
-                          {msg.sources?.map((src, idx) => (
-                            <span
-                              key={`${src.document}-${src.page}-${idx}`}
-                              className="inline-flex items-center gap-1 rounded-full border border-[#E8E8E8] bg-white px-2.5 py-0.5 text-[11px] text-[#555555]"
-                            >
-                              <FileText className="h-3 w-3 text-[#111111]" />
-                              {src.document} • p.{src.page}
+                          {msg.sources?.map((src, idx) => {
+                            const docLabel = src.filename || src.document;
+                            const pageLabel = src.page_number ?? src.page ?? 1;
+                            return (
+                              <button
+                                key={`${docLabel}-${pageLabel}-${idx}`}
+                                type="button"
+                                onClick={() => openCitationPdf(src)}
+                                title={`Open ${docLabel} at Page ${pageLabel}`}
+                                className="inline-flex items-center gap-1 rounded-full border border-[#E8E8E8] bg-white px-2.5 py-0.5 text-[11px] text-[#555555] hover:border-[#090909] hover:text-[#111111] transition-colors cursor-pointer"
+                              >
+                                <FileText className="h-3 w-3 text-[#111111]" />
+                                {docLabel} · Page {pageLabel}
+                              </button>
+                            );
+                          })}
+
+                          {msg.language && (
+                            <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] text-[#777777]">
+                              {msg.language}
                             </span>
-                          ))}
+                          )}
+
+                          {msg.intent && msg.intent !== "UNKNOWN_INTENT" && (
+                            <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] text-[#777777]">
+                              {msg.intent.replace(/_/g, " ")}
+                            </span>
+                          )}
 
                           {msg.is_mock && (
                             <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] text-[#777777]">
                               Dev Preview
                             </span>
                           )}
+                        </div>
+                      )}
+
+                      {!isUser && msg.needs_clarification && (msg.clarification_options?.length ?? 0) > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {msg.clarification_options?.map((opt) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => handleSend(opt)}
+                              className="rounded-full border border-[#090909] bg-white px-3 py-1 text-[11px] font-medium text-[#111111] hover:bg-[#090909] hover:text-white transition-colors"
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {!isUser && !msg.needs_clarification && (msg.followup_suggestions?.length ?? 0) > 0 && (
+                        <div className="mt-2.5 flex flex-wrap gap-1.5">
+                          {msg.followup_suggestions?.map((fq) => (
+                            <button
+                              key={fq}
+                              type="button"
+                              onClick={() => handleSend(fq)}
+                              className="rounded-full border border-[#E8E8E8] bg-white px-2.5 py-1 text-[11px] text-[#555555] hover:border-[#090909] hover:text-[#111111] transition-colors"
+                            >
+                              {fq}
+                            </button>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -286,6 +598,21 @@ export default function AskArthaLensPage() {
           </div>
 
           {/* Input Bar */}
+          {chatError && (
+            <div className="mx-5 mt-3 flex items-center justify-between gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs text-red-700">
+              <span className="inline-flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                {chatError}
+              </span>
+              <button
+                type="button"
+                onClick={() => setChatError("")}
+                className="text-[11px] font-medium underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -297,7 +624,7 @@ export default function AskArthaLensPage() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about missing nominees, leaks, tax mismatches, or policies..."
+              placeholder="Ask in English or Hinglish (e.g., Mera FD kab mature hoga?)..."
               className="flex-1 rounded-2xl border border-[#E8E8E8] bg-[#F7F7F7] px-4 py-3 text-sm text-[#111111] placeholder:text-[#888888] focus:border-[#090909] focus:bg-white focus:outline-none"
             />
             <button
@@ -311,6 +638,45 @@ export default function AskArthaLensPage() {
           </form>
         </div>
       </div>
+
+      <PdfViewerModal
+        open={Boolean(activePdf)}
+        documentId={activePdf?.documentId}
+        filename={activePdf?.filename || "document.pdf"}
+        initialPage={activePdf?.page || 1}
+        evidence={activePdf?.evidence}
+        onClose={() => setActivePdf(null)}
+      />
+
+      {confirmDeleteConv && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-3xl border border-[#E8E8E8] bg-white p-6 shadow-2xl space-y-4">
+            <h3 className="text-base font-semibold text-[#111111]">
+              Delete Conversation?
+            </h3>
+            <p className="text-xs text-[#777777] leading-relaxed">
+              This will permanently remove <strong className="text-[#111111]">{confirmDeleteConv.title}</strong> and its persisted messages.
+            </p>
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteConv(null)}
+                className="rounded-full border border-[#E8E8E8] px-4 py-2 text-xs font-medium text-[#777777] hover:text-[#111111]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingConv}
+                onClick={handleDeleteConversation}
+                className="rounded-full bg-red-600 px-5 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {deletingConv ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardShell>
   );
 }

@@ -5,6 +5,7 @@ import shutil
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -110,8 +111,26 @@ def demo_login(db: Session = Depends(get_db)):
     return TokenResponse(access_token=token, user=out)
 
 
+class UserProfileUpdate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=150)
+
+
 @router.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)):
+    out = UserOut.model_validate(current_user)
+    out.is_demo = current_user.email.endswith(".demo@arthalens.example")
+    return out
+
+
+@router.patch("/me", response_model=UserOut)
+def update_me(
+    payload: UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    current_user.name = payload.name.strip()
+    db.commit()
+    db.refresh(current_user)
     out = UserOut.model_validate(current_user)
     out.is_demo = current_user.email.endswith(".demo@arthalens.example")
     return out

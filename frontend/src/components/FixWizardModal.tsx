@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X, Check, Copy, ShieldAlert } from "lucide-react";
 import { FindingItem } from "@/lib/types";
 import { api } from "@/lib/api";
@@ -21,18 +21,57 @@ export function FixWizardModal({
   const [nomineeName, setNomineeName] = useState("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [savingProgress, setSavingProgress] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  if (!finding) return null;
+  useEffect(() => {
+    setCheckedSteps(Array.isArray(finding?.completed_steps) ? finding.completed_steps : []);
+    setEvidenceText(finding?.resolution_evidence || "");
+    setNomineeName("");
+    setError("");
+    setSuccessMsg("");
+    setCopied(false);
+  }, [finding?.id, finding?.completed_steps, finding?.resolution_evidence]);
+
+  if (!finding || typeof finding !== "object") return null;
+
+  const recommendedSteps = Array.isArray(finding?.recommended_steps)
+    ? finding.recommended_steps.filter((s): s is string => typeof s === "string" && s.trim().length > 0)
+    : [];
+  const safeCheckedSteps = Array.isArray(checkedSteps) ? checkedSteps : [];
+  const completedCount = recommendedSteps.filter((s) => safeCheckedSteps.includes(s)).length;
+  const progressPct = recommendedSteps.length > 0 ? Math.round((completedCount / recommendedSteps.length) * 100) : 0;
 
   const toggleStep = (step: string) => {
-    setCheckedSteps((prev) =>
-      prev.includes(step) ? prev.filter((s) => s !== step) : [...prev, step]
-    );
+    setSuccessMsg("");
+    setCheckedSteps((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return base.includes(step) ? base.filter((s) => s !== step) : [...base, step];
+    });
+  };
+
+  const handleSaveProgress = async () => {
+    setError("");
+    setSuccessMsg("");
+    setSavingProgress(true);
+    try {
+      await api.saveFixProgress(finding.id, {
+        verification_evidence: evidenceText.trim(),
+        completed_steps: safeCheckedSteps,
+        nominee_name: nomineeName.trim() || undefined,
+      });
+      setSuccessMsg("Progress saved. Finding marked In Review until finalized.");
+      onCompleted();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not save progress");
+    } finally {
+      setSavingProgress(false);
+    }
   };
 
   const handleCopyEmail = () => {
-    if (!finding.draft_email) return;
+    if (!finding?.draft_email) return;
     navigator.clipboard.writeText(finding.draft_email);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -49,7 +88,7 @@ export function FixWizardModal({
     try {
       await api.completeFix(finding.id, {
         verification_evidence: evidenceText.trim(),
-        completed_steps: checkedSteps,
+        completed_steps: safeCheckedSteps,
         nominee_name: nomineeName.trim() || undefined,
       });
       setEvidenceText("");
@@ -98,34 +137,55 @@ export function FixWizardModal({
 
           {/* Recommended Next Steps */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#777777] mb-2.5">
-              Recommended Next Steps
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#777777]">
+                Recommended Next Steps
+              </p>
+              {recommendedSteps.length > 0 && (
+                <span className="text-[11px] font-medium text-[#111111] tabular-nums">
+                  {completedCount} of {recommendedSteps.length} completed ({progressPct}%)
+                </span>
+              )}
+            </div>
+            {recommendedSteps.length > 0 && (
+              <div className="mb-3 h-1.5 w-full rounded-full bg-[#E8E8E8] overflow-hidden">
+                <div
+                  className="h-full bg-[#090909] transition-all duration-300"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+            )}
             <div className="space-y-2">
-              {finding.recommended_steps.map((step) => {
-                const done = checkedSteps.includes(step);
-                return (
-                  <button
-                    key={step}
-                    type="button"
-                    onClick={() => toggleStep(step)}
-                    className="w-full flex items-start gap-3 rounded-xl border border-[#E8E8E8] bg-white p-3 text-left hover:border-[#111111]/40 transition-colors"
-                  >
-                    <span
-                      className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                        done
-                          ? "bg-[#090909] border-[#090909] text-white"
-                          : "border-[#CCCCCC]"
-                      }`}
+              {recommendedSteps.length === 0 ? (
+                <p className="rounded-xl border border-[#E8E8E8] bg-[#F7F7F7] p-3 text-xs text-[#777777]">
+                  No recommended steps available yet.
+                </p>
+              ) : (
+                recommendedSteps.map((step, index) => {
+                  const done = safeCheckedSteps.includes(step);
+                  return (
+                    <button
+                      key={`${index}-${step}`}
+                      type="button"
+                      onClick={() => toggleStep(step)}
+                      className="w-full flex items-start gap-3 rounded-xl border border-[#E8E8E8] bg-white p-3 text-left hover:border-[#111111]/40 transition-colors"
                     >
-                      {done && <Check className="h-3 w-3" />}
-                    </span>
-                    <span className={`text-xs leading-relaxed ${done ? "line-through text-[#777777]" : "text-[#111111]"}`}>
-                      {step}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span
+                        className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                          done
+                            ? "bg-[#090909] border-[#090909] text-white"
+                            : "border-[#CCCCCC]"
+                        }`}
+                      >
+                        {done && <Check className="h-3 w-3" />}
+                      </span>
+                      <span className={`text-xs leading-relaxed ${done ? "line-through text-[#777777]" : "text-[#111111]"}`}>
+                        {step}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -183,10 +243,18 @@ export function FixWizardModal({
           </div>
 
           {error && (
-            <p className="text-xs text-red-600">{error}</p>
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs text-red-700">
+              {error}
+            </div>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#E8E8E8]">
+          {successMsg && (
+            <div className="rounded-xl border border-green-200 bg-green-50 px-3.5 py-2 text-xs text-green-800">
+              {successMsg}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2 border-t border-[#E8E8E8]">
             <button
               type="button"
               onClick={onClose}
@@ -195,8 +263,16 @@ export function FixWizardModal({
               Cancel
             </button>
             <button
+              type="button"
+              disabled={savingProgress || submitting}
+              onClick={handleSaveProgress}
+              className="rounded-full border border-[#090909] bg-white px-4 py-2 text-xs font-medium text-[#111111] hover:bg-[#F7F7F7] disabled:opacity-50"
+            >
+              {savingProgress ? "Saving..." : "Save Progress"}
+            </button>
+            <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || savingProgress}
               className="rounded-full bg-[#090909] px-5 py-2 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
             >
               {submitting ? "Updating..." : "Mark as Completed"}

@@ -1,4 +1,4 @@
-"""Groq API LLM integration with Ask ArthaLens system instructions."""
+"""Groq API LLM integration with upgraded 16-rule NLP-powered Ask ArthaLens system instructions."""
 
 from __future__ import annotations
 
@@ -13,29 +13,36 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-ASK_ARTHALENS_SYSTEM_PROMPT = """You are Ask ArthaLens, a financial document intelligence assistant.
+ASK_ARTHALENS_SYSTEM_PROMPT = """You are Ask ArthaLens, an advanced NLP-powered financial document intelligence assistant.
 
-Your responsibility is to analyze the user's uploaded financial documents and provide accurate, evidence-backed answers.
+You understand natural human language, financial terminology, conversational context, follow-up questions and multilingual queries.
 
-Rules:
+Your responsibilities:
 
-1. Answer using retrieved document context and verified structured database records only.
-2. Never fabricate financial information.
-3. Never assume that an absent field proves something does not exist.
-4. Clearly distinguish confirmed facts, potential findings and unverified information.
-5. Cite the source document and page number for document-based claims.
-6. If sources conflict, explain the discrepancy instead of silently choosing one.
-7. If information cannot be found, explicitly say that it is unavailable in the uploaded documents.
-8. Never reveal another user's information.
-9. Never execute financial transactions or submit forms.
-10. Do not provide legal, tax or investment advice.
-11. Explain findings in simple, user-friendly language.
-12. Do not present AI-generated assumptions as verified facts.
+1. Understand the user's actual intent rather than relying on exact keywords.
+2. Interpret financial terminology, abbreviations and synonyms.
+3. Understand grammatical relationships and negative questions.
+4. Resolve references using conversation context.
+5. Extract financial entities from questions.
+6. Retrieve information from authenticated users' documents.
+7. Compare multiple financial documents when necessary.
+8. Use structured database records for exact calculations.
+9. Provide evidence-backed answers with source citations.
+10. Distinguish verified facts from uncertain findings.
+11. Ask clarifying questions when the query is ambiguous.
+12. Admit when the information is unavailable.
+13. Never fabricate financial information.
+14. Never reveal another user's information.
+15. Never execute financial transactions or submit forms.
+16. Do not provide personalized financial, tax or legal advice.
 
-Output Format Requirement:
-Respond ONLY with a valid JSON object matching this exact schema:
+Always prioritize accuracy, transparency and evidence.
+
+Language & Output Rules:
+- Reply in the user's detected language (English or Hinglish) while keeping exact numbers (₹), dates, document filenames, and masked account references accurate.
+- Respond ONLY with a valid JSON object matching this exact schema:
 {
-  "answer": "Clear, user-friendly, evidence-backed answer citing exact document names and page numbers.",
+  "answer": "Clear, evidence-backed answer in the user's language citing exact document names and page numbers.",
   "confidence": "HIGH | MEDIUM | NEEDS_REVIEW | UNAVAILABLE",
   "sources": [
     {
@@ -64,16 +71,18 @@ def _build_messages(
     retrieved_context: str,
     sql_context: dict[str, Any],
     history: list[dict[str, str]],
+    nlp_context: dict[str, Any] | None = None,
 ) -> list[dict[str, str]]:
     messages: list[dict[str, str]] = [
         {"role": "system", "content": ASK_ARTHALENS_SYSTEM_PROMPT}
     ]
-    # Include recent conversation turns for follow-up support
     for msg in history[-8:]:
         messages.append({"role": msg["role"], "content": msg["content"]})
 
+    nlp_block = json.dumps(nlp_context or {}, indent=2, default=str)
     user_payload = (
         f"USER QUESTION:\n{question}\n\n"
+        f"NLP ANALYSIS (Language, Intent, Syntax, Resolved Query, Entities, Conversation Summary):\n{nlp_block}\n\n"
         f"RETRIEVED DOCUMENT CHUNKS (user-isolated):\n{retrieved_context or 'No matching document chunks retrieved.'}\n\n"
         f"VERIFIED STRUCTURED SQL RECORDS (user-isolated):\n{json.dumps(sql_context, indent=2, default=str)}\n\n"
         "Provide your grounded response as a single JSON object."
@@ -87,17 +96,18 @@ def generate_grounded_answer(
     retrieved_context: str,
     sql_context: dict[str, Any],
     history: list[dict[str, str]],
+    nlp_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Call Groq Chat Completions API and parse structured evidence-backed JSON."""
     client, model = _get_groq_client()
-    messages = _build_messages(question, retrieved_context, sql_context, history)
+    messages = _build_messages(question, retrieved_context, sql_context, history, nlp_context=nlp_context)
 
     try:
         completion = client.chat.completions.create(
             model=model,
             messages=messages,
             temperature=0.1,
-            max_tokens=1200,
+            max_tokens=1300,
             response_format={"type": "json_object"},
         )
         raw = completion.choices[0].message.content or "{}"
@@ -128,15 +138,16 @@ def stream_grounded_answer_tokens(
     retrieved_context: str,
     sql_context: dict[str, Any],
     history: list[dict[str, str]],
+    nlp_context: dict[str, Any] | None = None,
 ) -> Iterator[str]:
     """Stream raw text tokens from Groq for SSE streaming chat endpoints."""
     client, model = _get_groq_client()
-    messages = _build_messages(question, retrieved_context, sql_context, history)
+    messages = _build_messages(question, retrieved_context, sql_context, history, nlp_context=nlp_context)
     stream = client.chat.completions.create(
         model=model,
         messages=messages,
         temperature=0.1,
-        max_tokens=1200,
+        max_tokens=1300,
         stream=True,
     )
     for chunk in stream:

@@ -1,5 +1,6 @@
 """Findings, financial assets, dashboard, transactions, and evaluation endpoints."""
 
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import Document, FinancialAsset, Finding, Transaction, User
+from app.models import Document, FinancialAsset, Finding, FindingProgress, Transaction, User
 from app.schemas import FinancialAssetOut, FindingOut, TransactionOut
 from app.services import sql_analytics
 
@@ -27,24 +28,75 @@ class FixPayload(BaseModel):
     nominee_name: str | None = None
 
 
-def _ui_finding(f: Finding, user_id: int, is_demo: bool) -> dict:
+def _recommended_steps_for_finding(finding_type: str) -> list[str]:
+    ft = (finding_type or "").upper()
+    if "NOMINEE" in ft:
+        return [
+            "Download or request a Nomination Endorsement Form (u/s 39) from your insurer.",
+            "Verify existing policy nomination status in your insurer customer portal.",
+            "Enter the endorsement reference or confirmation note below once updated.",
+        ]
+    if "UNDISCOVERED_ACCOUNT" in ft:
+        return [
+            "Confirm whether you own or still actively hold the AIS-reported savings account.",
+            "Download the FY 2025–26 statement or passbook from the institution.",
+            "Upload the bank statement under Documents or record verification details below.",
+        ]
+    if "SALARY_DISCREPANCY" in ft:
+        return [
+            "Compare Form 16 Part B salary breakup against AIS TDS-192 quarterly Form 24Q filings.",
+            "Request a payroll reconciliation summary from your employer finance team.",
+            "Record the verified reconciliation note below before filing your return.",
+        ]
+    if "FD_MATURITY" in ft:
+        return [
+            "Review current term deposit renewal rates versus transferring proceeds to your savings account.",
+            "Submit renewal or maturity payout instructions to your bank before the maturity date.",
+            "Record your instruction reference number below.",
+        ]
+    if "SUBSCRIPTION" in ft or "BANK_CHARGES" in ft:
+        return [
+            "Review the recurring charges identified in your bank statement.",
+            "Cancel or adjust any unused subscriptions or avoidable service plans directly with the provider.",
+            "Record your review or cancellation confirmation below.",
+        ]
+    if "LOAN_EMI" in ft:
+        return [
+            "Cross-check the NACH auto-debit amount against your loan repayment schedule.",
+            "Contact your lender if any installment amount or due date differs.",
+            "Record your confirmation reference below.",
+        ]
+    return [
+        "Inspect the cited page in the Evidence Drawer.",
+        "Verify the record status with the reporting financial institution.",
+    ]
+
+
+def _ui_finding(f: Finding, user_id: int, is_demo: bool, progress: FindingProgress | None = None) -> dict:
     sev_map = {"RED": "High", "AMBER": "Medium", "INFO": "Low", "GREEN": "Low"}
+    status_map = {
+        "RESOLVED": "Resolved",
+        "DISMISSED": "Dismissed",
+        "IN_REVIEW": "In Review",
+        "OPEN": "Open",
+    }
     conf_pct = 94 if f.confidence == "HIGH" else 76
-    ev_list = f.evidence or []
-    first_ev = ev_list[0] if ev_list else {}
-    second_ev = ev_list[1] if len(ev_list) > 1 else {}
+    ev_list = f.evidence if isinstance(f.evidence, list) else []
+    first_ev = ev_list[0] if ev_list and isinstance(ev_list[0], dict) else {}
+    second_ev = ev_list[1] if len(ev_list) > 1 and isinstance(ev_list[1], dict) else {}
+    steps = _recommended_steps_for_finding(f.finding_type)
     return {
         "id": str(f.id),
         "user_id": str(user_id),
         "finding_type": f.finding_type,
-        "title": f.title,
-        "description": f.description,
-        "category": f.finding_type.split("_")[0].title(),
+        "title": f.title or "Financial Finding",
+        "description": f.description or "",
+        "category": "Nominee Gap" if "NOMINEE" in (f.finding_type or "").upper() else f.finding_type.split("_")[0].title(),
         "severity": sev_map.get(f.severity, "Medium"),
         "raw_severity": f.severity,
         "confidence": conf_pct,
         "raw_confidence": f.confidence,
-        "status": "Resolved" if f.status == "RESOLVED" else ("Dismissed" if f.status == "DISMISSED" else "Open"),
+        "status": status_map.get(f.status, "Open"),
         "is_demo": is_demo,
         "impact_amount": None,
         "evidence": {
@@ -61,11 +113,13 @@ def _ui_finding(f: Finding, user_id: int, is_demo: bool) -> dict:
             "fact_label": "Confirmed Fact" if f.confidence == "HIGH" else "Needs Verification",
         },
         "evidence_items": ev_list,
-        "recommended_steps": [
-            "Inspect the cited page in the Evidence Drawer.",
-            "Verify record status with the reporting institution.",
-        ],
+        "recommended_steps": steps if isinstance(steps, list) else [],
+        "completed_steps": list(progress.completed_steps) if progress and isinstance(progress.completed_steps, list) else [],
+        "resolution_evidence": progress.verification_evidence if progress else None,
         "feedback_wrong": f.status == "DISMISSED",
+        "feedback_note": progress.feedback_note if progress else None,
+        "resolved_at": progress.resolved_at.isoformat() if progress and progress.resolved_at else None,
+        "created_at": f.created_at.isoformat() if f.created_at else None,
     }
 
 
@@ -141,8 +195,13 @@ def get_dashboard(
         for m, v in month_map.items()
     ]
 
-    open_blindspots = sum(1 for f in findings if f.severity in ("RED", "AMBER") and f.status == "OPEN")
+    open_blindspots = sum(1 for f in findings if f.severity in ("RED", "AMBER") and f.status in ("OPEN", "IN_REVIEW"))
     score = max(40, min(98, 92 - open_blindspots * 8))
+
+    prog_map = {
+        p.finding_id: p
+        for p in db.scalars(select(FindingProgress).where(FindingProgress.user_id == current_user.id))
+    }
 
     return {
         "total_assets_mapped": round(total_mapped, 2),
@@ -154,7 +213,7 @@ def get_dashboard(
         "nominee_counts": counts,
         "trends": trends,
         "nominee_tiles": tiles,
-        "recent_findings": [_ui_finding(f, current_user.id, is_demo) for f in findings],
+        "recent_findings": [_ui_finding(f, current_user.id, is_demo, prog_map.get(f.id)) for f in findings],
         "has_demo_data": is_demo or len(assets) > 0,
     }
 
@@ -168,17 +227,57 @@ def get_evaluation_report(current_user: User = Depends(get_current_user)):
     return json.loads(report_path.read_text(encoding="utf-8"))
 
 
-@router.get("/findings", response_model=list[FindingOut])
+def _upsert_finding_progress(
+    db: Session,
+    finding_id: int,
+    user_id: int,
+    completed_steps: list[str] | None = None,
+    verification_evidence: str | None = None,
+    nominee_name: str | None = None,
+    feedback_note: str | None = None,
+    resolved: bool = False,
+) -> FindingProgress:
+    prog = db.scalar(
+        select(FindingProgress).where(
+            FindingProgress.finding_id == finding_id,
+            FindingProgress.user_id == user_id,
+        )
+    )
+    if prog is None:
+        prog = FindingProgress(finding_id=finding_id, user_id=user_id)
+        db.add(prog)
+    if completed_steps is not None:
+        prog.completed_steps = completed_steps
+    if verification_evidence is not None:
+        prog.verification_evidence = verification_evidence
+    if nominee_name is not None:
+        prog.nominee_name = nominee_name
+    if feedback_note is not None:
+        prog.feedback_note = feedback_note
+    if resolved:
+        prog.resolved_at = datetime.now(timezone.utc)
+    return prog
+
+
+@router.get("/findings")
 def get_findings(
     severity: str | None = Query(default=None),
+    finding_status: str | None = Query(default=None, alias="status"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    is_demo = current_user.email.endswith(".demo@arthalens.example")
     stmt = select(Finding).where(Finding.user_id == current_user.id)
     if severity:
         stmt = stmt.where(Finding.severity == severity.upper())
+    if finding_status:
+        stmt = stmt.where(Finding.status == finding_status.upper().replace(" ", "_"))
     stmt = stmt.order_by(Finding.id.asc())
-    return [FindingOut.model_validate(f) for f in db.scalars(stmt)]
+    prog_map = {
+        p.finding_id: p
+        for p in db.scalars(select(FindingProgress).where(FindingProgress.user_id == current_user.id))
+    }
+    return [_ui_finding(f, current_user.id, is_demo, prog_map.get(f.id)) for f in db.scalars(stmt)]
 
 
 @router.post("/findings/{finding_id}/feedback")
@@ -192,9 +291,41 @@ def report_finding_feedback(
     if f is None:
         raise HTTPException(status_code=404, detail="Finding not found.")
     f.status = "DISMISSED"
+    prog = _upsert_finding_progress(
+        db,
+        f.id,
+        current_user.id,
+        feedback_note=payload.reason.strip() or "Dismissed by user",
+    )
     db.commit()
     db.refresh(f)
-    return _ui_finding(f, current_user.id, current_user.email.endswith(".demo@arthalens.example"))
+    return _ui_finding(f, current_user.id, current_user.email.endswith(".demo@arthalens.example"), prog)
+
+
+@router.post("/findings/{finding_id}/progress")
+def save_finding_progress(
+    finding_id: int,
+    payload: FixPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    f = db.scalar(select(Finding).where(Finding.id == finding_id, Finding.user_id == current_user.id))
+    if f is None:
+        raise HTTPException(status_code=404, detail="Finding not found.")
+    if f.status == "OPEN":
+        f.status = "IN_REVIEW"
+    prog = _upsert_finding_progress(
+        db,
+        f.id,
+        current_user.id,
+        completed_steps=payload.completed_steps,
+        verification_evidence=payload.verification_evidence.strip() or None,
+        nominee_name=payload.nominee_name.strip() if payload.nominee_name else None,
+        resolved=False,
+    )
+    db.commit()
+    db.refresh(f)
+    return _ui_finding(f, current_user.id, current_user.email.endswith(".demo@arthalens.example"), prog)
 
 
 @router.post("/findings/{finding_id}/fix")
@@ -208,9 +339,18 @@ def resolve_finding(
     if f is None:
         raise HTTPException(status_code=404, detail="Finding not found.")
     f.status = "RESOLVED"
+    prog = _upsert_finding_progress(
+        db,
+        f.id,
+        current_user.id,
+        completed_steps=payload.completed_steps,
+        verification_evidence=payload.verification_evidence.strip() or None,
+        nominee_name=payload.nominee_name.strip() if payload.nominee_name else None,
+        resolved=True,
+    )
     db.commit()
     db.refresh(f)
-    return _ui_finding(f, current_user.id, current_user.email.endswith(".demo@arthalens.example"))
+    return _ui_finding(f, current_user.id, current_user.email.endswith(".demo@arthalens.example"), prog)
 
 
 @router.get("/assets", response_model=list[FinancialAssetOut])

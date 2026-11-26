@@ -247,3 +247,36 @@ def sql_all_assets_and_findings(db: Session, user_id: int) -> dict[str, Any]:
             for f in findings
         ],
     }
+
+
+def sql_holistic_financial_health(db: Session, user_id: int) -> dict[str, Any]:
+    """Parameterized overview across assets, liabilities, insurance, recurring leaks, and open findings."""
+    snapshot = sql_all_assets_and_findings(db, user_id)
+    subs = sql_subscription_and_recurring_expenses(db, user_id)
+    loans = sql_loan_and_emi_reconciliation(db, user_id)
+    fds = sql_upcoming_fd_maturities(db, user_id)
+
+    assets = snapshot["assets"]
+    savings_total = sum(a["amount_inr"] for a in assets if a["asset_type"] == "SAVINGS_ACCOUNT")
+    fd_total = sum(a["amount_inr"] for a in assets if a["asset_type"] == "FIXED_DEPOSIT")
+    insurance_cover = sum(a["amount_inr"] for a in assets if a["asset_type"] == "LIFE_INSURANCE")
+    loan_outstanding = sum(a["amount_inr"] for a in assets if a["asset_type"] == "PERSONAL_LOAN")
+
+    open_findings = snapshot["findings"]
+    return {
+        "savings_balance_inr": round(savings_total, 2),
+        "fixed_deposits_principal_inr": round(fd_total, 2),
+        "life_insurance_cover_inr": round(insurance_cover, 2),
+        "loan_outstanding_inr": round(loan_outstanding, 2),
+        "annual_subscriptions_inr": subs["annual_subscriptions_inr"],
+        "bank_fees_annual_inr": subs["bank_fees_annual_inr"],
+        "upcoming_fd_maturities": fds["fixed_deposits"],
+        "loan_emi_summary": loans,
+        "findings_by_severity": {
+            "RED": [f for f in open_findings if f["severity"] == "RED"],
+            "AMBER": [f for f in open_findings if f["severity"] == "AMBER"],
+            "INFO": [f for f in open_findings if f["severity"] == "INFO"],
+            "GREEN": [f for f in open_findings if f["severity"] == "GREEN"],
+        },
+        "total_assets_count": len(assets),
+    }

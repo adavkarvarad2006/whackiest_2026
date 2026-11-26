@@ -13,10 +13,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.models import Document, DocumentChunk, FinancialAsset, Transaction
+from app.models import Document, DocumentChunk, ExtractedEntityRecord, FinancialAsset, Transaction
 from app.services.embeddings import embed_texts
 from app.services.extraction import extract_structured_data
 from app.services.intelligence import recompute_user_findings
+from app.services.nlp.ner import extract_entities_from_pages
 from app.services.pdf_parser import chunk_pages, detect_document_type, extract_pdf_pages
 
 logger = logging.getLogger(__name__)
@@ -125,6 +126,10 @@ def process_existing_document(db: Session, doc: Document) -> Document:
             Transaction.document_id == doc.id,
             Transaction.user_id == doc.user_id,
         ).delete()
+        db.query(ExtractedEntityRecord).filter(
+            ExtractedEntityRecord.document_id == doc.id,
+            ExtractedEntityRecord.user_id == doc.user_id,
+        ).delete()
         db.flush()
 
         pages = extract_pdf_pages(file_path)
@@ -180,6 +185,19 @@ def process_existing_document(db: Session, doc: Document) -> Document:
                     reference_no=tx.reference_no,
                     page_number=tx.page_number,
                     confidence=tx.confidence,
+                )
+            )
+
+        for ner_ent in extract_entities_from_pages(pages):
+            db.add(
+                ExtractedEntityRecord(
+                    user_id=doc.user_id,
+                    document_id=doc.id,
+                    page_number=ner_ent.page_number,
+                    entity_type=ner_ent.entity_type,
+                    entity_value=ner_ent.entity_value,
+                    supporting_text=ner_ent.supporting_text,
+                    confidence=ner_ent.confidence,
                 )
             )
 

@@ -67,11 +67,13 @@ export interface FindingItem {
   impact_amount?: number | null;
   evidence: EvidenceDetail;
   recommended_steps: string[];
+  completed_steps?: string[];
   draft_email?: string | null;
   feedback_wrong: boolean;
   feedback_note?: string | null;
   resolution_evidence?: string | null;
   resolved_at?: string | null;
+  created_at?: string | null;
 }
 
 export interface NomineeAssetTile {
@@ -112,9 +114,14 @@ export interface DashboardSummary {
 export type ChatConfidence = "HIGH" | "MEDIUM" | "NEEDS_REVIEW" | "LOW" | string;
 
 export interface ChatSource {
+  document_id?: string | number | null;
+  filename?: string;
   document: string;
+  page_number?: number;
   page: number;
+  evidence?: string;
   snippet?: string;
+  relevance_score?: number | null;
 }
 
 export interface ChatRequest {
@@ -124,8 +131,13 @@ export interface ChatRequest {
 
 export interface ChatResponse {
   answer: string;
+  intent?: string;
+  language?: string;
   confidence: ChatConfidence;
   sources: ChatSource[];
+  needs_clarification?: boolean;
+  clarification_options?: string[];
+  followup_suggestions?: string[];
   conversation_id: string;
   is_mock?: boolean;
 }
@@ -134,8 +146,13 @@ export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  intent?: string;
+  language?: string;
   confidence?: ChatConfidence;
   sources?: ChatSource[];
+  needs_clarification?: boolean;
+  clarification_options?: string[];
+  followup_suggestions?: string[];
   created_at: string;
   is_mock?: boolean;
 }

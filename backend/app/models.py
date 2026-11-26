@@ -258,3 +258,42 @@ class ChatMessage(Base):
     )
 
     conversation: Mapped[Conversation] = relationship(back_populates="messages")
+
+
+class ExtractedEntityRecord(Base):
+    __tablename__ = "extracted_entities"
+    __table_args__ = (
+        Index("ix_entities_user_type", "user_id", "entity_type"),
+        Index("ix_entities_user_doc", "user_id", "document_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
+    page_number: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    entity_type: Mapped[str] = mapped_column(String(60), nullable=False)
+    entity_value: Mapped[str] = mapped_column(String(255), nullable=False)
+    supporting_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    confidence: Mapped[str] = mapped_column(String(40), nullable=False, default="HIGH")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class FindingProgress(Base):
+    __tablename__ = "finding_progress"
+    __table_args__ = (
+        UniqueConstraint("finding_id", "user_id", name="uq_finding_progress_user"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    finding_id: Mapped[int] = mapped_column(ForeignKey("findings.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    completed_steps: Mapped[list[str]] = mapped_column(JSONBType(), nullable=False, default=list)
+    verification_evidence: Mapped[str | None] = mapped_column(Text, nullable=True)
+    nominee_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    feedback_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )

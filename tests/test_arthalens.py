@@ -168,11 +168,16 @@ def test_05_cross_document_findings_and_sql_analytics(client_and_db):
     findings = client.get("/api/findings", headers=headers).json()
     ftypes = {f["finding_type"]: f for f in findings}
 
+    for f in findings:
+        assert isinstance(f.get("recommended_steps"), list) and len(f["recommended_steps"]) >= 1
+        assert isinstance(f.get("evidence"), dict)
+
     assert "GAP_UNDISCOVERED_ACCOUNT" in ftypes
-    assert ftypes["GAP_UNDISCOVERED_ACCOUNT"]["severity"] == "AMBER"
+    assert ftypes["GAP_UNDISCOVERED_ACCOUNT"]["raw_severity"] == "AMBER"
     assert "GAP_MISSING_NOMINEE" in ftypes
-    assert ftypes["GAP_MISSING_NOMINEE"]["severity"] == "RED"
-    assert ftypes["GAP_MISSING_NOMINEE"]["evidence"][0]["page"] == 2
+    assert ftypes["GAP_MISSING_NOMINEE"]["raw_severity"] == "RED"
+    assert ftypes["GAP_MISSING_NOMINEE"]["evidence"]["page_number"] == 2
+    assert ftypes["GAP_MISSING_NOMINEE"]["evidence_items"][0]["page"] == 2
     assert "LEAK_RECURRING_SUBSCRIPTIONS" in ftypes
     assert "RISK_SALARY_DISCREPANCY" in ftypes
     assert "RISK_UPCOMING_FD_MATURITY" in ftypes
@@ -278,7 +283,10 @@ def test_07_chat_endpoint_followups_and_empty_user_admission(client_and_db):
         conv_id = body1["conversation_id"]
         assert body1["confidence"] == "NEEDS_REVIEW"
         assert body1["sources"][0]["document"] == "Insurance_Policy.pdf"
+        assert body1["sources"][0]["filename"] == "Insurance_Policy.pdf"
         assert body1["sources"][0]["page"] == 2
+        assert body1["sources"][0]["page_number"] == 2
+        assert body1["sources"][0]["document_id"] is not None
 
         # Follow-up question on same conversation
         c2 = client.post(
@@ -295,3 +303,302 @@ def test_07_chat_endpoint_followups_and_empty_user_admission(client_and_db):
 
     # User B cannot read User A's conversation history
     assert client.get(f"/api/chat/history/{conv_id}", headers=headers_b).status_code == 404
+
+
+def test_08_citation_to_pdf_streaming_and_range_requests(client_and_db):
+    client, _ = client_and_db
+    login_a = client.post(
+        "/api/auth/login",
+        json={"email": "ananya.test@example.com", "password": "SecurePassword123!"},
+    )
+    headers_a = {"Authorization": f"Bearer {login_a.json()['access_token']}"}
+    login_b = client.post(
+        "/api/auth/login",
+        json={"email": "other.user@example.com", "password": "SecurePassword123!"},
+    )
+    headers_b = {"Authorization": f"Bearer {login_b.json()['access_token']}"}
+
+    docs_a = client.get("/api/documents", headers=headers_a).json()
+    ins_doc = next(d for d in docs_a if d["filename"] == "Insurance_Policy.pdf")
+    doc_id = ins_doc["id"]
+
+    # Unauthenticated request must fail
+    assert client.get(f"/api/documents/{doc_id}/file").status_code == 401
+
+    # Another user must not be able to access User A's PDF
+    assert client.get(f"/api/documents/{doc_id}/file", headers=headers_b).status_code == 404
+
+    # Full PDF fetch returns application/pdf and exact original PDF bytes
+    full_res = client.get(f"/api/documents/{doc_id}/file", headers=headers_a)
+    assert full_res.status_code == 200
+    assert full_res.headers["content-type"].startswith("application/pdf")
+    assert full_res.headers.get("accept-ranges") == "bytes"
+    assert full_res.content[:5] == b"%PDF-"
+    expected_bytes = (DATASET_DOCS / "Insurance_Policy.pdf").read_bytes()
+    assert full_res.content == expected_bytes
+
+    # HTTP Range request returns 206 Partial Content with Content-Range header
+    range_res = client.get(
+        f"/api/documents/{doc_id}/file",
+        headers={**headers_a, "Range": "bytes=0-1023"},
+    )
+    assert range_res.status_code == 206
+    assert range_res.headers["content-range"] == f"bytes 0-1023/{len(expected_bytes)}"
+    assert range_res.content == expected_bytes[:1024]
+
+
+def test_09_chat_history_export_formats_special_chars_and_isolation(client_and_db):
+    import json
+    import uuid
+    import pymupdf
+    from app.models import ChatMessage, Conversation
+
+    client, SessionLocal = client_and_db
+    login_a = client.post(
+        "/api/auth/login",
+        json={"email": "ananya.test@example.com", "password": "SecurePassword123!"},
+    )
+    user_a_id = login_a.json()["user"]["id"]
+    headers_a = {"Authorization": f"Bearer {login_a.json()['access_token']}"}
+
+    login_b = client.post(
+        "/api/auth/login",
+        json={"email": "other.user@example.com", "password": "SecurePassword123!"},
+    )
+    headers_b = {"Authorization": f"Bearer {login_b.json()['access_token']}"}
+
+    # Create a special-char + INR currency conversation AND an empty conversation for User A
+    special_conv_id = uuid.uuid4()
+    empty_conv_id = uuid.uuid4()
+    with SessionLocal() as db:
+        db.add(Conversation(id=special_conv_id, user_id=user_a_id, title="AIS & Form 16 — ₹18,000 Check"))
+        db.add(ChatMessage(
+            conversation_id=special_conv_id,
+            user_id=user_a_id,
+            role="user",
+            content="Compare AIS ₹11,60,400 & Form 16 <₹11,42,400>?",
+        ))
+        db.add(ChatMessage(
+            conversation_id=special_conv_id,
+            user_id=user_a_id,
+            role="assistant",
+            content="AIS reports ₹11,60,400.00 vs Form 16 ₹11,42,400.00 (diff ₹18,000.00).",
+            confidence="NEEDS_REVIEW",
+            sources=[{"document_id": 2, "filename": "AIS_Report.pdf", "document": "AIS_Report.pdf", "page_number": 1, "page": 1, "evidence": "Total Reported Salary: ₹11,60,400.00"}],
+        ))
+        db.add(Conversation(id=empty_conv_id, user_id=user_a_id, title="Empty Thread"))
+        db.commit()
+
+    # 1. Single conversation PDF export (with citations & INR ₹)
+    pdf_res = client.get(f"/api/chat/history/{special_conv_id}/export?format=pdf", headers=headers_a)
+    assert pdf_res.status_code == 200
+    assert pdf_res.headers["content-type"].startswith("application/pdf")
+    assert pdf_res.content[:5] == b"%PDF-"
+    pdf_doc = pymupdf.open(stream=pdf_res.content, filetype="pdf")
+    pdf_text = "\n".join(p.get_text() for p in pdf_doc)
+    pdf_doc.close()
+    assert "ARTHALENS" in pdf_text
+    assert "AIS_Report.pdf" in pdf_text
+    assert "Page 1" in pdf_text
+    assert "₹11,60,400.00" in pdf_text
+
+    # 2. Single conversation TXT export
+    txt_res = client.get(f"/api/chat/history/{special_conv_id}/export?format=txt", headers=headers_a)
+    assert txt_res.status_code == 200
+    txt_body = txt_res.content.decode("utf-8")
+    assert "ARTHALENS" in txt_body
+    assert "AIS_Report.pdf (Page 1)" in txt_body
+    assert "₹18,000.00" in txt_body
+
+    # 3. Single conversation JSON export
+    json_res = client.get(f"/api/chat/history/{special_conv_id}/export?format=json", headers=headers_a)
+    assert json_res.status_code == 200
+    json_body = json.loads(json_res.content.decode("utf-8"))
+    assert json_body["application"] == "ArthaLens"
+    assert json_body["conversations"][0]["messages"][1]["sources"][0]["filename"] == "AIS_Report.pdf"
+
+    # 4. Empty conversation export works cleanly across formats
+    for fmt in ("pdf", "txt", "json"):
+        empty_res = client.get(f"/api/chat/history/{empty_conv_id}/export?format={fmt}", headers=headers_a)
+        assert empty_res.status_code == 200
+
+    # 5. Export All Conversations (pdf, txt, json)
+    for fmt in ("pdf", "txt", "json"):
+        all_res = client.get(f"/api/chat/history/export-all?format={fmt}", headers=headers_a)
+        assert all_res.status_code == 200
+
+    # 6. User B isolation: cannot export User A's conversation and export-all excludes User A's threads
+    assert client.get(f"/api/chat/history/{special_conv_id}/export?format=json", headers=headers_b).status_code == 404
+    b_all = json.loads(client.get("/api/chat/history/export-all?format=json", headers=headers_b).content.decode("utf-8"))
+    assert all(c["conversation_id"] != str(special_conv_id) for c in b_all["conversations"])
+
+
+def test_10_five_level_nlp_hinglish_coreference_ambiguity_and_pragmatic(client_and_db):
+    from sqlalchemy import func, select
+    from app.models import ExtractedEntityRecord
+    from app.services.nlp.intent import classify_intent
+    from app.services.nlp.lexical import analyze_lexical
+    from app.services.nlp.syntactic import analyze_syntax
+
+    client, SessionLocal = client_and_db
+    login_a = client.post(
+        "/api/auth/login",
+        json={"email": "ananya.test@example.com", "password": "SecurePassword123!"},
+    )
+    user_a_id = login_a.json()["user"]["id"]
+    headers_a = {"Authorization": f"Bearer {login_a.json()['access_token']}"}
+
+    # Verify NER entities persisted in database during ingestion
+    with SessionLocal() as db:
+        ent_count = db.scalar(
+            select(func.count(ExtractedEntityRecord.id)).where(ExtractedEntityRecord.user_id == user_a_id)
+        )
+        assert ent_count and ent_count >= 10
+
+    # Level 1: Spell correction + abbreviations + Hinglish detection
+    lex_typo = analyze_lexical("Show insurence FD and EMI details")
+    assert lex_typo.spell_corrections.get("insurence") == "insurance"
+    assert any("FD ->" in x for x in lex_typo.expanded_abbreviations)
+    assert any("EMI ->" in x for x in lex_typo.expanded_abbreviations)
+
+    # Level 2 + Level 3: Negative syntactic equivalence for nominee queries
+    for q in (
+        "Which policies don't have nominees?",
+        "Show me policies where nominee details are unavailable.",
+        "Are any of my insurance policies missing nominee information?",
+    ):
+        lx = analyze_lexical(q)
+        sx = analyze_syntax(lx)
+        ir = classify_intent(lx, sx)
+        assert sx.has_negation is True
+        assert sx.relation == "missing_nominee"
+        assert ir.intent == "NOMINEE_QUERY"
+
+    # Level 3: Semantic idioms
+    ir_sub = classify_intent(
+        analyze_lexical("Where is my money getting deducted every month?"),
+        analyze_syntax(analyze_lexical("Where is my money getting deducted every month?")),
+    )
+    assert ir_sub.intent in ("SUBSCRIPTION_QUERY", "EXPENSE_QUERY")
+
+    ir_nom = classify_intent(
+        analyze_lexical("Who gets my insurance money if something happens to me?"),
+        analyze_syntax(analyze_lexical("Who gets my insurance money if something happens to me?")),
+    )
+    assert ir_nom.intent == "NOMINEE_QUERY"
+
+    # Level 5: Pragmatic holistic health check
+    ir_prag = classify_intent(
+        analyze_lexical("Am I financially prepared?"),
+        analyze_syntax(analyze_lexical("Am I financially prepared?")),
+    )
+    assert ir_prag.intent == "GENERAL_FINANCIAL_OVERVIEW"
+    assert ir_prag.pragmatic_type == "HOLISTIC_HEALTH_CHECK"
+
+    # Multilingual Hinglish queries
+    hinglish_cases = [
+        ("Mere kaunse bank accounts missing hain?", "BANK_ACCOUNT_QUERY"),
+        ("Kaunsi policy mein nominee details nahi hain?", "NOMINEE_QUERY"),
+        ("Mera FD kab mature hoga?", "FD_QUERY"),
+        ("Mera loan kitna outstanding hai?", "LOAN_QUERY"),
+        ("AIS aur Form 16 mein koi mismatch hai kya?", "TAX_QUERY"),
+        ("Meri salary kitni hai Form 16 ke hisaab se?", "SALARY_QUERY"),
+    ]
+    for hq, expected_intent in hinglish_cases:
+        hlx = analyze_lexical(hq)
+        hsx = analyze_syntax(hlx)
+        hir = classify_intent(hlx, hsx)
+        assert hlx.language == "Hinglish", f"Failed Hinglish detection for: {hq}"
+        assert hir.intent == expected_intent, f"{hq} got {hir.intent}"
+
+    # Document-aware suggestions endpoint
+    sug_res = client.get("/api/chat/suggestions", headers=headers_a)
+    assert sug_res.status_code == 200
+    assert len(sug_res.json()["suggestions"]) >= 4
+
+    # Ambiguity detection on singular bank account query (User A has 2 bank accounts)
+    ambig_res = client.post(
+        "/api/chat",
+        headers=headers_a,
+        json={"question": "What is my bank account balance?"},
+    )
+    assert ambig_res.status_code == 200
+    ab = ambig_res.json()
+    assert ab["needs_clarification"] is True
+    assert len(ab["clarification_options"]) == 2
+
+    # Level 4: Coreference resolution across multi-turn FD follow-up
+    mock_fd_1 = {
+        "answer": "Your fixed deposit DEMO-FD-XX2184 matures on 25-Jun-2026.",
+        "confidence": "HIGH",
+        "sources": [{"document": "FD_Certificate.pdf", "page": 1, "evidence": "Maturity Date: 25-Jun-2026"}],
+    }
+    mock_fd_2 = {
+        "answer": "The principal amount of that fixed deposit is ₹2,50,000.00.",
+        "confidence": "HIGH",
+        "sources": [{"document": "FD_Certificate.pdf", "page": 1, "evidence": "Principal Amount: ₹2,50,000.00"}],
+    }
+    with patch("app.services.chat.generate_grounded_answer", side_effect=[mock_fd_1, mock_fd_2]):
+        t1 = client.post("/api/chat", headers=headers_a, json={"question": "When does my fixed deposit mature?"})
+        assert t1.status_code == 200
+        cid = t1.json()["conversation_id"]
+        assert t1.json()["intent"] == "FD_QUERY"
+
+        t2 = client.post(
+            "/api/chat",
+            headers=headers_a,
+            json={"question": "What is its principal amount?", "conversation_id": cid},
+        )
+        assert t2.status_code == 200
+        b2 = t2.json()
+        assert b2["nlp_metadata"]["coreference_applied"] is True
+        assert "fixed deposit" in b2["nlp_metadata"]["resolved_query"].lower()
+
+
+def test_11_interactive_actions_progress_profile_and_chat_delete(client_and_db):
+    client, _SessionLocal = client_and_db
+    login_a = client.post(
+        "/api/auth/login",
+        json={"email": "ananya.test@example.com", "password": "SecurePassword123!"},
+    )
+    headers_a = {"Authorization": f"Bearer {login_a.json()['access_token']}"}
+    orig_name = login_a.json()["user"]["name"]
+
+    # 1. Finding Fix Wizard progress save persists steps and sets status to In Review
+    findings = client.get("/api/findings", headers=headers_a).json()
+    open_f = next(f for f in findings if f["status"] == "Open")
+    first_step = open_f["recommended_steps"][0]
+
+    prog_res = client.post(
+        f"/api/findings/{open_f['id']}/progress",
+        headers=headers_a,
+        json={
+            "verification_evidence": "Requested nomination endorsement form",
+            "completed_steps": [first_step],
+        },
+    )
+    assert prog_res.status_code == 200
+    pb = prog_res.json()
+    assert pb["status"] == "In Review"
+    assert pb["completed_steps"] == [first_step]
+
+    # 2. Profile name update persists via PATCH /api/auth/me
+    patch_res = client.patch(
+        "/api/auth/me",
+        headers=headers_a,
+        json={"name": "Ananya Updated"},
+    )
+    assert patch_res.status_code == 200
+    assert patch_res.json()["name"] == "Ananya Updated"
+    # Restore original name
+    client.patch("/api/auth/me", headers=headers_a, json={"name": orig_name})
+
+    # 3. Conversation delete removes conversation cleanly (and 404s afterwards)
+    hist = client.get("/api/chat/history", headers=headers_a).json()
+    assert len(hist) >= 1
+    cid = hist[0]["conversation_id"]
+    del_res = client.delete(f"/api/chat/history/{cid}", headers=headers_a)
+    assert del_res.status_code == 200
+    assert del_res.json()["deleted"] is True
+    after_res = client.get(f"/api/chat/history/{cid}", headers=headers_a)
+    assert after_res.status_code == 404

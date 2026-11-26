@@ -112,8 +112,10 @@ class FindingOut(BaseModel):
 # Chat & Evidence
 # ---------------------------------------------------------------------------
 class EvidenceSource(BaseModel):
-    document_id: Optional[int] = None
+    document_id: Optional[int | str] = None
+    filename: Optional[str] = None
     document: str
+    page_number: Optional[int] = None
     page: int
     evidence: str
     snippet: Optional[str] = None
@@ -127,8 +129,14 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
+    intent: str = "UNKNOWN_INTENT"
+    language: str = "English"
     confidence: str
     sources: list[EvidenceSource] = Field(default_factory=list)
+    needs_clarification: bool = False
+    clarification_options: list[str] = Field(default_factory=list)
+    followup_suggestions: list[str] = Field(default_factory=list)
+    nlp_metadata: dict[str, Any] = Field(default_factory=dict)
     disclaimer: str = "This finding is based only on the uploaded documents and verified structured records."
     conversation_id: UUID
     retrieval_mode: str = "HYBRID"

@@ -160,3 +160,41 @@ def retrieve_relevant_chunks(
 
     results.sort(key=lambda r: r.combined_score, reverse=True)
     return results[:k]
+
+
+def retrieve_multi_query_chunks(
+    db: Session,
+    user_id: int,
+    queries: list[str],
+    top_k: Optional[int] = None,
+    similarity_threshold: Optional[float] = None,
+) -> list[RetrievedChunk]:
+    """
+    Run hybrid vector + keyword retrieval across expanded queries strictly for `user_id`,
+    fusing and ranking unique chunks by highest combined relevance score.
+    """
+    settings = get_settings()
+    k = top_k or settings.retrieval_top_k
+    best_by_chunk: dict[int, RetrievedChunk] = {}
+
+    for idx, q in enumerate(queries[:5]):
+        if not q.strip():
+            continue
+        weight = 1.0 if idx == 0 else 0.90
+        hits = retrieve_relevant_chunks(
+            db=db,
+            user_id=user_id,
+            query=q,
+            top_k=k,
+            similarity_threshold=similarity_threshold,
+            hybrid=True,
+        )
+        for h in hits:
+            weighted_score = round(h.combined_score * weight, 4)
+            existing = best_by_chunk.get(h.chunk_id)
+            if existing is None or weighted_score > existing.combined_score:
+                h.combined_score = weighted_score
+                best_by_chunk[h.chunk_id] = h
+
+    ranked = sorted(best_by_chunk.values(), key=lambda r: r.combined_score, reverse=True)
+    return ranked[:k]
