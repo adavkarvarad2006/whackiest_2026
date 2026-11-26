@@ -48,20 +48,23 @@ function confidenceBadge(confidence?: ChatConfidence) {
   if (normalized === "HIGH" || normalized === "VERIFIED") {
     return {
       label: normalized,
-      className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      className:
+        "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800",
       Icon: ShieldCheck,
     };
   }
   if (normalized === "NEEDS_REVIEW" || normalized === "MEDIUM") {
     return {
       label: normalized.replace("_", " "),
-      className: "bg-amber-50 text-amber-700 border-amber-200",
+      className:
+        "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800",
       Icon: ShieldAlert,
     };
   }
   return {
     label: normalized || "INFO",
-    className: "bg-neutral-100 text-[#111111] border-[#E8E8E8]",
+    className:
+      "bg-white text-[#374151] border-[#E5E5E5] dark:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#404040]",
     Icon: ShieldAlert,
   };
 }
@@ -553,7 +556,7 @@ export default function AskArthaLensPage() {
                       key={q}
                       type="button"
                       onClick={() => handleSend(q)}
-                      className="text-left rounded-2xl border border-[#E8E8E8] bg-[#F7F7F7] px-4 py-3 text-xs font-medium text-[#111111] hover:border-[#090909] hover:bg-white transition-colors"
+                      className="text-left rounded-2xl border border-[#E5E5E5] bg-[#F7F7F7] px-4 py-3 text-xs font-medium text-[#171717] hover:border-[#090909] hover:bg-white dark:border-[#333333] dark:bg-[#1F1F1F] dark:text-[#F5F5F5] dark:hover:bg-[#2A2A2A] transition-colors"
                     >
                       {q}
                     </button>
@@ -579,24 +582,24 @@ export default function AskArthaLensPage() {
                       className={`max-w-2xl rounded-3xl px-5 py-4 text-sm leading-relaxed ${
                         isUser
                           ? "bg-[#090909] text-white"
-                          : "bg-[#F7F7F7] text-[#111111] border border-[#E8E8E8]"
+                          : "bg-[#F7F7F7] text-[#171717] border border-[#E5E5E5] dark:bg-[#1F1F1F] dark:text-[#F5F5F5] dark:border-[#333333]"
                       }`}
                     >
                       {isUser ? (
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <p className="whitespace-pre-wrap text-white">{msg.content}</p>
                       ) : (
                         <AssistantMarkdown content={msg.content} />
                       )}
                       <p
                         className={`mt-1.5 text-[10px] ${
-                          isUser ? "text-white/55 text-right" : "text-[#888888]"
+                          isUser ? "text-white/60 text-right" : "text-[#666666] dark:text-[#A3A3A3]"
                         }`}
                       >
                         {formatISTWithTz(msg.created_at)}
                       </p>
 
                       {!isUser && (
-                        <div className="mt-3.5 pt-3 border-t border-[#E8E8E8] flex flex-wrap items-center gap-2">
+                        <div className="mt-3.5 pt-3 border-t border-[#E5E5E5] dark:border-[#333333] flex flex-wrap items-center gap-2">
                           {badge && BadgeIcon && (
                             <span
                               className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${badge.className}`}
@@ -615,40 +618,40 @@ export default function AskArthaLensPage() {
                                 type="button"
                                 onClick={() => openCitationPdf(src)}
                                 title={`Open ${docLabel} at Page ${pageLabel}`}
-                                className="inline-flex items-center gap-1 rounded-full border border-[#E8E8E8] bg-white px-2.5 py-0.5 text-[11px] text-[#555555] hover:border-[#090909] hover:text-[#111111] transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1 rounded-full border border-[#E5E5E5] bg-white px-2.5 py-0.5 text-[11px] font-medium text-[#374151] hover:border-[#090909] hover:text-[#111111] dark:border-[#404040] dark:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:hover:border-white transition-colors cursor-pointer"
                               >
-                                <FileText className="h-3 w-3 text-[#111111]" />
+                                <FileText className="h-3 w-3 text-[#374151] dark:text-[#A3A3A3]" />
                                 {docLabel} · Page {pageLabel}
                               </button>
                             );
                           })}
 
                           {msg.retrieval_mode === "GENERAL_LLM" && (
-                            <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555555]">
+                            <span className="rounded-full border border-[#E5E5E5] bg-white px-2 py-0.5 text-[10px] font-medium text-[#666666] dark:border-[#404040] dark:bg-[#2A2A2A] dark:text-[#A3A3A3]">
                               General Knowledge
                             </span>
                           )}
 
                           {msg.retrieval_mode === "HYBRID_REASONING" && (
-                            <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555555]">
+                            <span className="rounded-full border border-[#E5E5E5] bg-white px-2 py-0.5 text-[10px] font-medium text-[#666666] dark:border-[#404040] dark:bg-[#2A2A2A] dark:text-[#A3A3A3]">
                               Hybrid Analysis
                             </span>
                           )}
 
                           {msg.language && (
-                            <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] text-[#777777]">
+                            <span className="rounded-full border border-[#E5E5E5] bg-white px-2 py-0.5 text-[10px] text-[#666666] dark:border-[#404040] dark:bg-[#2A2A2A] dark:text-[#A3A3A3]">
                               {msg.language}
                             </span>
                           )}
 
                           {msg.intent && msg.intent !== "UNKNOWN_INTENT" && (
-                            <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] text-[#777777]">
+                            <span className="rounded-full border border-[#E5E5E5] bg-white px-2 py-0.5 text-[10px] text-[#666666] dark:border-[#404040] dark:bg-[#2A2A2A] dark:text-[#A3A3A3]">
                               {msg.intent.replace(/_/g, " ")}
                             </span>
                           )}
 
                           {msg.is_mock && (
-                            <span className="rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] text-[#777777]">
+                            <span className="rounded-full border border-[#E5E5E5] bg-white px-2 py-0.5 text-[10px] text-[#666666] dark:border-[#404040] dark:bg-[#2A2A2A] dark:text-[#A3A3A3]">
                               Dev Preview
                             </span>
                           )}
@@ -657,7 +660,7 @@ export default function AskArthaLensPage() {
                             <button
                               type="button"
                               onClick={() => handleCopyResponse(msg.id, msg.content)}
-                              className="inline-flex items-center gap-1 rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555555] hover:border-[#090909] hover:text-[#111111]"
+                              className="inline-flex items-center gap-1 rounded-full border border-[#E5E5E5] bg-white px-2.5 py-0.5 text-[10px] font-medium text-[#374151] hover:border-[#090909] hover:text-[#111111] dark:border-[#404040] dark:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:hover:border-white"
                               title="Copy response"
                             >
                               {copiedMsgId === msg.id ? <Check className="h-2.5 w-2.5" /> : <Copy className="h-2.5 w-2.5" />}
@@ -667,7 +670,7 @@ export default function AskArthaLensPage() {
                               <button
                                 type="button"
                                 onClick={() => handleSend(prevUserQuestion)}
-                                className="inline-flex items-center gap-1 rounded-full border border-[#E8E8E8] bg-white px-2 py-0.5 text-[10px] font-medium text-[#555555] hover:border-[#090909] hover:text-[#111111]"
+                                className="inline-flex items-center gap-1 rounded-full border border-[#E5E5E5] bg-white px-2.5 py-0.5 text-[10px] font-medium text-[#374151] hover:border-[#090909] hover:text-[#111111] dark:border-[#404040] dark:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:hover:border-white"
                                 title="Retry response"
                               >
                                 <RotateCcw className="h-2.5 w-2.5" />
@@ -685,7 +688,7 @@ export default function AskArthaLensPage() {
                               key={opt}
                               type="button"
                               onClick={() => handleSend(opt)}
-                              className="rounded-full border border-[#090909] bg-white px-3 py-1 text-[11px] font-medium text-[#111111] hover:bg-[#090909] hover:text-white transition-colors"
+                              className="rounded-full border border-[#090909] bg-white px-3 py-1 text-[11px] font-medium text-[#111111] hover:bg-[#090909] hover:text-white dark:border-[#E5E5E5] dark:bg-[#2A2A2A] dark:text-[#F5F5F5] transition-colors"
                             >
                               {opt}
                             </button>
@@ -700,7 +703,7 @@ export default function AskArthaLensPage() {
                               key={fq}
                               type="button"
                               onClick={() => handleSend(fq)}
-                              className="rounded-full border border-[#E8E8E8] bg-white px-2.5 py-1 text-[11px] text-[#555555] hover:border-[#090909] hover:text-[#111111] transition-colors"
+                              className="rounded-full border border-[#E5E5E5] bg-white px-2.5 py-1 text-[11px] text-[#374151] hover:border-[#090909] hover:text-[#111111] dark:border-[#404040] dark:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:hover:border-white transition-colors"
                             >
                               {fq}
                             </button>
@@ -715,12 +718,12 @@ export default function AskArthaLensPage() {
 
             {sending && (
               <div className="flex justify-start">
-                <div className="max-w-2xl rounded-3xl border border-[#E8E8E8] bg-[#F7F7F7] px-5 py-3.5 text-sm text-[#111111] space-y-2">
+                <div className="max-w-2xl rounded-3xl border border-[#E5E5E5] bg-[#F7F7F7] px-5 py-3.5 text-sm text-[#171717] dark:border-[#333333] dark:bg-[#1F1F1F] dark:text-[#F5F5F5] space-y-2">
                   {streamingText ? (
                     <AssistantMarkdown content={streamingText} />
                   ) : null}
-                  <div className="text-xs text-[#777777] flex items-center gap-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#111111]" />
+                  <div className="text-xs text-[#666666] dark:text-[#A3A3A3] flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#111111] dark:text-[#F5F5F5]" />
                     <span>{streamingText ? "Streaming grounded answer..." : "ArthaLens is thinking..."}</span>
                   </div>
                 </div>
