@@ -145,27 +145,116 @@ export const api = {
     return apiFetch<DocumentItem>(`/api/documents/${docId}`);
   },
 
-  async fetchDocumentFile(docId: string | number): Promise<Blob> {
+  async fetchDocumentFileWithMeta(
+    docId: string | number,
+    options?: { signal?: AbortSignal }
+  ): Promise<{
+    blob: Blob;
+    url: string;
+    status: number;
+    contentType: string;
+    contentLength: number | null;
+  }> {
+    const url = `${API_BASE}/api/documents/${docId}/file`;
     const token = getStoredToken();
     const headers = new Headers();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
-    const res = await fetch(`${API_BASE}/api/documents/${docId}/file`, {
-      method: "GET",
-      headers,
-    });
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 45000);
+    const onExternalAbort = () => controller.abort();
+    if (options?.signal) {
+      if (options.signal.aborted) {
+        clearTimeout(timer);
+        throw new DOMException("PDF fetch aborted", "AbortError");
+      }
+      options.signal.addEventListener("abort", onExternalAbort, { once: true });
+    }
+
+    let res: Response;
+    try {
+      if (process.env.NODE_ENV !== "production") {
+        console.debug("[ArthaLens PDF] Fetching original document", { documentId: docId, url });
+      }
+      res = await fetch(url, {
+        method: "GET",
+        headers,
+        signal: controller.signal,
+      });
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === "AbortError" && !options?.signal?.aborted) {
+        throw new Error("PDF download timed out after 45s. Please retry.");
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+      options?.signal?.removeEventListener("abort", onExternalAbort);
+    }
+
+    const contentType = (res.headers.get("content-type") || "")
+      .split(";")[0]
+      .trim()
+      .toLowerCase();
+    const rawLen = res.headers.get("content-length");
+    const contentLength = rawLen && /^\d+$/.test(rawLen) ? Number(rawLen) : null;
+
+    if (process.env.NODE_ENV !== "production") {
+      console.debug("[ArthaLens PDF] Document response received", {
+        documentId: docId,
+        status: res.status,
+        contentType: contentType || "(missing)",
+        contentLength,
+      });
+    }
+
     if (!res.ok) {
-      let detail = `Unable to load PDF (${res.status})`;
+      let detail = `Unable to load PDF (HTTP ${res.status})`;
       try {
-        const err = await res.json();
-        if (err?.detail) detail = err.detail;
+        if (contentType === "application/json") {
+          const err = await res.json();
+          if (err?.detail) detail = String(err.detail);
+        } else {
+          const text = (await res.text()).trim();
+          if (text && !text.startsWith("<")) detail = text.slice(0, 200);
+        }
       } catch {
-        // ignore non-json error
+        // ignore parse failure
       }
       throw new Error(detail);
     }
-    return res.blob();
+
+    if (
+      contentType &&
+      contentType !== "application/pdf" &&
+      contentType !== "application/octet-stream"
+    ) {
+      throw new Error(
+        `Unexpected response type (${contentType}) instead of application/pdf.`
+      );
+    }
+
+    const blob = await res.blob();
+    if (!blob || blob.size === 0) {
+      throw new Error("Received an empty PDF file from the server.");
+    }
+
+    return {
+      blob,
+      url,
+      status: res.status,
+      contentType: contentType || "application/pdf",
+      contentLength,
+    };
+  },
+
+  async fetchDocumentFile(
+    docId: string | number,
+    options?: { signal?: AbortSignal }
+  ): Promise<Blob> {
+    const result = await this.fetchDocumentFileWithMeta(docId, options);
+    return result.blob;
   },
 
   uploadDocuments(files: File[], docTypeHint?: DocumentType) {

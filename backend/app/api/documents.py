@@ -1,5 +1,6 @@
 """Document upload (single or multi-file), listing, inspection, deletion, and reprocessing endpoints."""
 
+import logging
 from pathlib import Path
 import re
 
@@ -17,6 +18,7 @@ from app.services.ingestion import ingest_uploaded_pdf, process_existing_documen
 from app.services.intelligence import recompute_user_findings
 from app.timezone_utils import to_ist_iso
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
 DOC_TYPE_FROM_HINT = {
@@ -210,14 +212,14 @@ def get_document(
     return out
 
 
-@router.get("/{document_id}/file")
+@router.api_route("/{document_id}/file", methods=["GET", "HEAD"])
 def get_document_file(
     document_id: int,
     request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Stream original PDF securely for the authenticated owner with HTTP Range support."""
+    """Stream original PDF securely for the authenticated owner with HTTP Range & HEAD support."""
     doc = db.scalar(
         select(Document).where(
             Document.id == document_id,
@@ -225,6 +227,7 @@ def get_document_file(
         )
     )
     if doc is None:
+        logger.warning("PDF delivery blocked: doc_id=%s not found for user_id=%s", document_id, current_user.id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
 
     settings = get_settings()
@@ -233,38 +236,71 @@ def get_document_file(
 
     # Ensure path stays inside storage root or exists safely without ever leaking paths
     if not pdf_path.is_file():
+        logger.warning("PDF file missing on disk: doc_id=%s user_id=%s", doc.id, current_user.id)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Original PDF file is missing or has been deleted.",
         )
 
-    # Restrict access strictly to storage_root unless running legacy test fixtures
     try:
         pdf_path.relative_to(storage_root)
     except ValueError:
-        # Allow if storage_path matches same user folder structure only; never allow arbitrary traversal
         if str(current_user.id) not in pdf_path.parts:
+            logger.warning("PDF path outside storage sandbox: doc_id=%s user_id=%s", doc.id, current_user.id)
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied.")
 
     file_size = pdf_path.stat().st_size
-    safe_name = doc.filename.replace('"', "")
+    if file_size <= 0:
+        logger.warning("Empty PDF binary: doc_id=%s user_id=%s", doc.id, current_user.id)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Stored PDF file is empty (0 bytes).",
+        )
+
+    # Validate PDF header signature before streaming so damaged/non-PDF files never masquerade as valid PDFs
+    with open(pdf_path, "rb") as probe:
+        header_bytes = probe.read(min(1024, file_size))
+    if b"%PDF-" not in header_bytes:
+        logger.warning("Invalid PDF signature on disk: doc_id=%s user_id=%s", doc.id, current_user.id)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Stored document does not contain a valid %PDF- binary header.",
+        )
+
+    safe_name = (doc.filename or f"document_{doc.id}.pdf").replace('"', "").replace("\r", "").replace("\n", "")
     base_headers = {
         "Accept-Ranges": "bytes",
         "Content-Disposition": f'inline; filename="{safe_name}"',
         "Cache-Control": "private, max-age=300",
+        "X-Content-Type-Options": "nosniff",
     }
 
+    is_head = request.method.upper() == "HEAD"
     range_header = request.headers.get("range")
     if range_header:
-        m = re.match(r"bytes=(\d*)-(\d*)", range_header.strip())
-        if not m:
+        m = re.fullmatch(r"bytes=(\d*)-(\d*)", range_header.strip())
+        if not m or (not m.group(1) and not m.group(2)):
             raise HTTPException(
                 status_code=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
-                detail="Invalid byte range header.",
+                detail="Invalid or unsupported byte range header.",
+                headers={"Content-Range": f"bytes */{file_size}"},
             )
         start_str, end_str = m.groups()
-        start = int(start_str) if start_str else 0
-        end = int(end_str) if end_str else file_size - 1
+        if not start_str and end_str:
+            # RFC 9110 suffix-byte-range-spec: bytes=-N
+            suffix_len = int(end_str)
+            if suffix_len <= 0:
+                raise HTTPException(
+                    status_code=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
+                    detail="Requested suffix range not satisfiable.",
+                    headers={"Content-Range": f"bytes */{file_size}"},
+                )
+            start = max(0, file_size - suffix_len)
+            end = file_size - 1
+        else:
+            start = int(start_str)
+            end = int(end_str) if end_str else file_size - 1
+
         if start >= file_size or end < start:
             raise HTTPException(
                 status_code=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
@@ -273,6 +309,28 @@ def get_document_file(
             )
         end = min(end, file_size - 1)
         chunk_len = (end - start) + 1
+
+        logger.info(
+            "Streaming PDF range: doc_id=%s user_id=%s bytes=%s-%s/%s method=%s",
+            doc.id,
+            current_user.id,
+            start,
+            end,
+            file_size,
+            request.method,
+        )
+
+        if is_head:
+            return Response(
+                content=b"",
+                status_code=status.HTTP_206_PARTIAL_CONTENT,
+                media_type="application/pdf",
+                headers={
+                    **base_headers,
+                    "Content-Range": f"bytes {start}-{end}/{file_size}",
+                    "Content-Length": str(chunk_len),
+                },
+            )
 
         def iter_range():
             with open(pdf_path, "rb") as f:
@@ -293,6 +351,25 @@ def get_document_file(
                 **base_headers,
                 "Content-Range": f"bytes {start}-{end}/{file_size}",
                 "Content-Length": str(chunk_len),
+            },
+        )
+
+    logger.info(
+        "Streaming full PDF: doc_id=%s user_id=%s size_bytes=%s method=%s",
+        doc.id,
+        current_user.id,
+        file_size,
+        request.method,
+    )
+
+    if is_head:
+        return Response(
+            content=b"",
+            status_code=status.HTTP_200_OK,
+            media_type="application/pdf",
+            headers={
+                **base_headers,
+                "Content-Length": str(file_size),
             },
         )
 
